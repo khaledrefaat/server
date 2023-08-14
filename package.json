@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "vitest",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-validator": "^6.15.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.3",
+    "nanoid": "^3.3.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "vitest": "^0.33.0"
+  }
+}
