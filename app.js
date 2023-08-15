@@ -53,7 +53,7 @@ app.use('/tray', traysRouter);
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-    app.listen(6565);
+    app.listen(5001);
     console.log('Working');
   })
   .catch(err => console.log(err));
