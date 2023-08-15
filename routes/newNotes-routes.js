@@ -36,6 +36,7 @@ const {
   getFixedSalary,
   postFixedSalary,
   deleteFixedSalary,
+  fixFixedSalaryBalance,
 } = require('../controllers/newNoteBooks/fixedSalary-controllers');
 
 const {
@@ -64,6 +65,7 @@ router.post('/employment', postEmployment);
 router.delete('/employment/:_id', deleteEmployment);
 
 router.get('/fixed-salary', getFixedSalary);
+router.get('/fixed-salary/fix', fixFixedSalaryBalance);
 router.post('/fixed-salary', postFixedSalary);
 router.delete('/fixed-salary/:_id', deleteFixedSalary);
 

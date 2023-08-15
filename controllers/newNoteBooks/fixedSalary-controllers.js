@@ -1,7 +1,11 @@
 const { FixedSalary } = require('../../models/newNotes');
 const DailySales = require('../../models/dailySales');
 const mongoose = require('mongoose');
-const { calcDailySalesBalance, calcBalance } = require('./lib');
+const {
+  calcDailySalesBalance,
+  calcBalance,
+  updateModelBalance,
+} = require('./lib');
 
 exports.getFixedSalary = async (req, res) => {
   try {
@@ -102,3 +106,15 @@ exports.deleteFixedSalary = async (req, res) => {
   ['hospitality', 'Hospitality'],
   ['requirements', 'Requirements'],
 ];
+
+exports.fixFixedSalaryBalance = async (req, res) => {
+  try {
+    const result = await updateModelBalance(FixedSalary);
+    if (result === null) return serverErrorMessage(res);
+
+    return res.status(200).json({ msg: 'Done ^_^' });
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+};
