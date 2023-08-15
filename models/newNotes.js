@@ -25,6 +25,8 @@ exports.Requirements = model('Requirements', generalSchema);
 
 exports.Forks = model('Forks', generalSchema);
 
+exports.Water = model('Water', generalSchema);
+
 const Loan = new Schema({
   balance: {
     type: Number,

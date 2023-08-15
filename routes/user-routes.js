@@ -6,12 +6,6 @@ const { signUp, login, getUsers } = require('../controllers/user-controllers');
 
 router.post('/login', login);
 
-router.post(
-  '/signup',
-  [check('username').not().isEmpty(), check('password').isLength({ min: 6 })],
-  signUp
-);
-
-router.get('/', getUsers);
+router.post('/signup', [check('password').isLength({ min: 6 })], signUp);
 
 module.exports = router;

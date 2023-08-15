@@ -19,7 +19,9 @@ exports.getSeedings = async (req, res) => {
 exports.postSeeding = async (req, res) => {
   const { itemId, quantity, unit, plantDate, lotNumber, trays } = req.body;
 
-  if (!trays || trays <= 0)
+  const parseTrays = parseInt(trays);
+
+  if (!parseTrays || parseTrays <= 0)
     return res.status(422).json({ msg: 'من فضلك ادخل عدد الصواني المزروعة' });
 
   try {
@@ -27,7 +29,7 @@ exports.postSeeding = async (req, res) => {
     session.startTransaction();
     const item = await Item.findById(itemId);
 
-    item.balance += trays;
+    item.balance += parseTrays;
     const transactionId = nanoid();
 
     const date = new Date();
@@ -35,9 +37,9 @@ exports.postSeeding = async (req, res) => {
     let total = 0;
     const seeds = await Seeding.find({});
     if (seeds[seeds.length - 1]) {
-      total += seeds[seeds.length - 1].total + trays;
+      total += parseInt(seeds[seeds.length - 1].total) + parseInt(parseTrays);
     } else {
-      total = trays;
+      total = parseInt(parseTrays);
     }
 
     const newSeed = new Seeding({
@@ -48,13 +50,13 @@ exports.postSeeding = async (req, res) => {
       unit,
       plantDate: plantDate || date,
       lotNumber,
-      trays,
+      trays: parseTrays,
       total,
     });
 
     const newTray = new Trays({
       name: item.name,
-      income: trays,
+      income: parseTrays,
       date,
       seedingId: newSeed._id,
     });
@@ -64,6 +66,9 @@ exports.postSeeding = async (req, res) => {
     const newDailySale = new DailySales({
       name: item.name,
       statement: `زراعة ${quantity} ${item.name}`,
+      goods: {
+        income: parseTrays,
+      },
       date,
       noteBook: {
         name: 'Seeding',
@@ -76,7 +81,7 @@ exports.postSeeding = async (req, res) => {
       {
         _id: transactionId,
         balance: item.balance,
-        income: trays,
+        income: parseTrays,
         date,
         seedingId: newSeed._id,
       },
@@ -106,7 +111,7 @@ exports.deleteSeeding = async (req, res) => {
     // updating seeding
     await Seeding.updateMany(
       { _id: { $gt: id } },
-      { $inc: { total: -seeding.trays } }
+      { $inc: { balance: -seeding.trays } }
     );
 
     // //////////////////////////////////////////////
@@ -116,9 +121,9 @@ exports.deleteSeeding = async (req, res) => {
       data => data._id === seeding.itemTransactionId
     );
     for (let i = itemDataIndex; i < item.data.length; i++) {
-      item.data[i].balance -= seeding.trays;
+      item.data[i].balance -= parseInt(seeding.trays);
     }
-    item.balance -= seeding.trays;
+    item.balance -= parseInt(seeding.trays);
     item.data = item.data.filter(
       data => data._id !== seeding.itemTransactionId
     );
@@ -133,5 +138,22 @@ exports.deleteSeeding = async (req, res) => {
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
+  }
+};
+
+exports.fixTotal = async (req, res) => {
+  try {
+    const seeding = Seeding.find({});
+
+    let previousTotal = 0;
+
+    (await seeding).forEach(async seed => {
+      previousTotal += parseFloat(seed.trays);
+      seed.total = previousTotal;
+      await seed.save();
+    });
+    return res.status(200).json({ msg: 'Done ^_^' });
+  } catch (err) {
+    console.log(err);
   }
 };

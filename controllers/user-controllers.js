@@ -2,28 +2,12 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
-exports.getUsers = async (req, res, next) => {
-  let users;
-  try {
-    users = await User.find({}).select('username');
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل الدخول، من فضلك حاول في وقت لاحق' });
-  }
-
-  if (!users) return res.json({ message: 'No users found' });
-
-  res.json(users);
-};
-
 exports.login = async (req, res, next) => {
-  const { username, password } = req.body;
+  const { password } = req.body;
 
-  let exsistingUser;
+  let existingUser;
   try {
-    exsistingUser = await User.findOne({ username });
+    existingUser = await User.findOne({ password });
   } catch (err) {
     console.log(err);
     return res
@@ -31,11 +15,7 @@ exports.login = async (req, res, next) => {
       .json({ msg: 'حدث خطأ اثناء تسجيل الدخول، من فضلك حاول في وقت لاحق' });
   }
 
-  if (!exsistingUser) {
-    return res.status(401).json({ msg: 'اسم المستخدم غير صحيح' });
-  }
-
-  if (exsistingUser.password !== password) {
+  if (existingUser.password !== password) {
     return res.status(401).json({ msg: 'كلمة السر غير صحيحة' });
   }
 
@@ -43,8 +23,7 @@ exports.login = async (req, res, next) => {
   try {
     token = jwt.sign(
       {
-        userId: exsistingUser._id,
-        username: exsistingUser.username,
+        userId: existingUser._id,
       },
       'Super_Secret_Dont_Share',
       { expiresIn: '3h' }
@@ -56,9 +35,8 @@ exports.login = async (req, res, next) => {
       .json({ msg: 'حدث خطأ اثناء تسجيل الدخول، من فضلك حاول في وقت لاحق' });
   }
   res.json({
-    userId: exsistingUser._id,
-    username: exsistingUser.username,
-    admin: exsistingUser.admin,
+    userId: existingUser._id,
+    admin: existingUser.admin,
     token,
   });
 };
@@ -69,11 +47,11 @@ exports.signUp = async (req, res, next) => {
     return res.status(422).json({ msg: 'Invalid Inputs!' });
   }
 
-  const { username, password, admin } = req.body;
+  const { password, admin } = req.body;
 
   let exsistingUser;
   try {
-    exsistingUser = await User.findOne({ username });
+    exsistingUser = await User.findOne({ password });
   } catch (err) {
     console.log(err);
     return res
@@ -86,7 +64,6 @@ exports.signUp = async (req, res, next) => {
   }
 
   const createdUser = new User({
-    username,
     password,
     admin: admin ? true : false,
   });
@@ -117,7 +94,6 @@ exports.signUp = async (req, res, next) => {
 
   res.json({
     userId: createdUser._id,
-    username: createdUser.username,
     admin: createdUser.admin,
     token,
   });

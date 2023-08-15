@@ -1,4 +1,4 @@
-const { Requirements } = require('../../models/newNotes');
+const { Water } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
 const { serverErrorMessage } = require('../../lib/lib');
@@ -8,17 +8,19 @@ const {
   calcBalance,
 } = require('./lib');
 
-exports.getRequirements = async (req, res) => {
+const { getIndexById } = require('../../lib/retrieveModelData');
+
+exports.getWater = async (req, res) => {
   try {
-    const requirements = await Requirements.find({});
-    res.status(200).json(requirements);
+    const water = await Water.find({});
+    res.status(200).json(water);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
   }
 };
 
-exports.postRequirements = async (req, res) => {
+exports.postWater = async (req, res) => {
   const { expense, statement } = req.body;
   const date = new Date();
 
@@ -37,26 +39,26 @@ exports.postRequirements = async (req, res) => {
         expense,
         balance: calcDailySalesBalance(await dailySales, expense),
       },
-      statement: statement,
+      statement: statement || 'مياه',
       date,
       noteBook: {
-        name: 'Requirements',
+        name: 'Water',
       },
     });
 
-    const requirementsOldData = await Requirements.find({});
+    const waterOldData = await Water.find({});
 
-    const requirements = new Requirements({
-      balance: calcBalance(requirementsOldData, expense),
+    const water = new Water({
+      balance: calcBalance(waterOldData, expense),
       expense,
       statement,
       dailySaleId: dailySale._id,
       date,
     });
 
-    dailySale.noteBook._id = requirements._id;
+    dailySale.noteBook._id = water._id;
 
-    await requirements.save();
+    await water.save();
     await dailySale.save();
 
     session.commitTransaction();
@@ -67,30 +69,30 @@ exports.postRequirements = async (req, res) => {
   }
 };
 
-exports.deleteRequirements = async (req, res) => {
+exports.deleteWater = async (req, res) => {
   const _id = req.params._id;
 
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    const requirements = await Requirements.findById(_id);
+    const water = await Water.findById(_id);
 
-    await Requirements.updateMany(
-      { _id: { $gt: requirements._id } },
-      { $inc: { balance: -requirements.expense } }
+    await Water.updateMany(
+      { _id: { $gt: water._id } },
+      { $inc: { balance: -water.expense } }
     );
 
-    const dailySale = await DailySales.findById(requirements.dailySaleId);
+    const dailySale = await DailySales.findById(water.dailySaleId);
     // subtract each daily sale balance that come after the targeted deleted one
-    await DailySales.find({}).updateMany(
+    await DailySales.updateMany(
       { _id: { $gt: dailySale._id } },
       {
         $inc: { 'money.balance': dailySale.money.expense },
       }
     );
 
-    await requirements.deleteOne();
+    await water.deleteOne();
     await dailySale.deleteOne();
 
     session.commitTransaction();
@@ -101,9 +103,9 @@ exports.deleteRequirements = async (req, res) => {
   }
 };
 
-exports.fixRequirementsBalance = async (req, res) => {
+exports.fixWaterBalance = async (req, res) => {
   try {
-    const result = await updateModelBalance(Requirements);
+    const result = await updateModelBalance(Water);
     if (result === null) return serverErrorMessage(res);
 
     return res.status(200).json({ msg: 'Done ^_^' });

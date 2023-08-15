@@ -45,6 +45,13 @@ const {
   fixRequirementsBalance,
 } = require('../controllers/newNoteBooks/requirements-controllers');
 
+const {
+  getWater,
+  postWater,
+  deleteWater,
+  fixWaterBalance,
+} = require('../controllers/newNoteBooks/water-controllers');
+
 const { getLoans, postLoan } = require('../controllers/loan');
 
 router.get('/electricity', getElectricity);
@@ -76,6 +83,11 @@ router.get('/requirements', getRequirements);
 router.get('/requirements/fix', fixRequirementsBalance);
 router.post('/requirements', postRequirements);
 router.delete('/requirements/:_id', deleteRequirements);
+
+router.get('/water', getWater);
+router.get('/water/fix', fixWaterBalance);
+router.post('/water', postWater);
+router.delete('/water/:_id', deleteWater);
 
 router.get('/loan', getLoans);
 router.post('/loan', postLoan);

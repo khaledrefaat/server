@@ -73,7 +73,7 @@ exports.deleteGas = async (req, res) => {
 
     await Gas.updateMany(
       { _id: { $gt: gas._id } },
-      { $inc: { total: -gas.expense } }
+      { $inc: { balance: -gas.expense } }
     );
 
     const dailySale = await DailySales.findById(gas.dailySaleId);

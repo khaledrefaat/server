@@ -74,7 +74,7 @@ exports.deleteForks = async (req, res) => {
 
     await Forks.updateMany(
       { _id: { $gt: forks._id } },
-      { $inc: { total: -forks.expense } }
+      { $inc: { balance: -forks.expense } }
     );
 
     const dailySale = await DailySales.findById(forks.dailySaleId);
