@@ -25,7 +25,6 @@ exports.getFertilizers = async (req, res) => {
 // Function to edit the price of a fertilizer
 exports.editFertilizerPrice = async (req, res) => {
   const { _id, newPrice } = req.body;
-  console.log(req.body);
   try {
     // Check if the new price is provided
     if (!newPrice) return sendResponse(res, 'لو سمحت ادخل السعر الجديد');

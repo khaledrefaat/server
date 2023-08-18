@@ -81,7 +81,10 @@ exports.newTransaction = async (req, res) => {
 
     let dailySalesStatement = `منصرف عدد ${trays} صواني ${item.name}`;
 
-    const dailySaleBalance = dailySalesBalance(dailySales, paid);
+    let dailySaleBalance;
+    if (paid) {
+      dailySaleBalance = dailySalesBalance(dailySales, paid);
+    }
 
     const dailySalesNoteBook = {
       name: 'Customer',
@@ -101,7 +104,7 @@ exports.newTransaction = async (req, res) => {
     );
 
     const total = calcTotal(item.unitPrice, trays);
-    const balance = calcBalance(paid, total, customer.balance);
+    const balance = calcBalance(paid || 0, total, customer.balance);
 
     const newTransaction = {
       _id: transactionId,

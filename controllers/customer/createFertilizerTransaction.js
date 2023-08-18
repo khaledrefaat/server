@@ -47,8 +47,6 @@ exports.newFertilizerTransaction = async (req, res) => {
 
     const dailySaleBalance = dailySalesBalance(dailySales, paid);
 
-    console.log(dailySaleBalance);
-
     // ... Similar logic for creating newDailySales
 
     const dailySale = new DailySales({

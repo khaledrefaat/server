@@ -22,7 +22,6 @@ exports.getItems = async (req, res) => {
 
 exports.editItemPrice = async (req, res) => {
   const { _id, newPrice } = req.body;
-  console.log(req.body);
   try {
     if (!newPrice) return sendResponse(res, 'لو سمحت ادخل السعر الجديد');
 

@@ -80,7 +80,7 @@ exports.deleteForks = async (req, res) => {
     const dailySale = await DailySales.findById(forks.dailySaleId);
     // subtract each daily sale balance that come after the targeted deleted one
     await DailySales.find({}).updateMany(
-      { _id: { $gt: dailySale._id } },
+      { _id: { $gt: dailySale._id }, money: { $exists: true } },
       {
         $inc: { 'money.balance': dailySale.money.expense },
       }

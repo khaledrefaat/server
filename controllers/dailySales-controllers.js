@@ -50,8 +50,6 @@ exports.getDailySales = async (req, res, next) => {
     });
     dailySales = reverseArr(dailySales);
 
-    console.log(organizedDailySales);
-
     sendResponse(res, { organizedDailySales, dailySales }, 200);
   } catch (err) {
     console.log(err);

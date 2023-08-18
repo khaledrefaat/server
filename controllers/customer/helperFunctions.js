@@ -22,19 +22,31 @@ exports.createItemDailySales = (
   date,
   noteBook
 ) => {
-  return new DailySales({
-    name,
-    money: {
-      balance,
-      income,
-    },
-    goods: {
-      expense,
-    },
-    statement,
-    date,
-    noteBook,
-  });
+  if (income) {
+    return new DailySales({
+      name,
+      money: {
+        balance,
+        income,
+      },
+      goods: {
+        expense,
+      },
+      statement,
+      date,
+      noteBook,
+    });
+  } else {
+    return new DailySales({
+      name,
+      goods: {
+        expense,
+      },
+      statement,
+      date,
+      noteBook,
+    });
+  }
 };
 
 exports.validateFertilizerInput = ({

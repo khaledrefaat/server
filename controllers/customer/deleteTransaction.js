@@ -18,11 +18,11 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
     const customerTransaction = tmpData[transactionIndex];
     for (let i = transactionIndex + 1; i < tmpData.length; i++) {
       tmpData[i].balance +=
-        (customerTransaction.total || 0) - customerTransaction.paid;
+        (customerTransaction.total || 0) - (customerTransaction.paid || 0);
     }
 
     customer.balance +=
-      (customerTransaction.total || 0) - customerTransaction.paid;
+      (customerTransaction.total || 0) - (customerTransaction.paid || 0);
     customer.trays -= customerTransaction.trays;
     tmpData.splice(transactionIndex, 1);
     customer.data = tmpData;

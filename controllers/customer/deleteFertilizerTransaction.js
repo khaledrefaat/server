@@ -17,9 +17,9 @@ const deleteTransactionFromFertilizer = async (fertilizerId, transactionId) => {
     const fertilizerTransaction = dataTmp[transactionIndex];
 
     for (let i = transactionIndex + 1; i < dataTmp.length; i++)
-      dataTmp[i].balance += parseFloat(fertilizerTransaction.expense);
+      dataTmp[i].balance += parseFloat(fertilizerTransaction.expense) || 0;
 
-    fertilizer.balance += parseFloat(fertilizerTransaction.expense);
+    fertilizer.balance += parseFloat(fertilizerTransaction.expense) || 0;
 
     dataTmp.splice(transactionIndex, 1);
     fertilizer.data = dataTmp;
@@ -75,8 +75,6 @@ exports.deleteFertilizerTransaction = async (req, res) => {
     const transactionIndex = getIndexById(tmpData, transactionId);
 
     const transaction = tmpData[transactionIndex];
-
-    console.log(req.params);
 
     // ////////////////////////////////////////////////
     // delete the fertilizer data

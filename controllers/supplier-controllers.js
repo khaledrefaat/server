@@ -189,21 +189,23 @@ exports.deleteTransaction = async (req, res) => {
     const transaction = dataTmp[transactionIndex];
 
     for (let i = transactionIndex + 1; i < dataTmp.length; i++) {
-      dataTmp[i].balance += transaction.total - transaction.paid;
+      dataTmp[i].balance +=
+        parseInt(transaction.total) - (parseInt(transaction.paid) || 0);
     }
 
     const dailySale = await DailySales.findById(transaction.dailySaleId);
     // subtract each daily sale balance that come after the targeted deleted one
     await DailySales.find({}).updateMany(
-      { _id: { $gt: dailySale._id } },
+      { _id: { $gt: dailySale._id }, money: { $exists: true } },
       {
-        $inc: { 'money.balance': dailySale.money.expense },
+        $inc: { 'money.balance': dailySale.money.expense || 0 },
       }
     );
 
     await dailySale.deleteOne();
 
-    supplier.balance += transaction.total - transaction.paid;
+    supplier.balance +=
+      parseInt(transaction.total) - (parseInt(transaction.paid) || 0);
     dataTmp.splice(transactionIndex, 1);
     supplier.data = dataTmp;
 
@@ -217,7 +219,6 @@ exports.deleteTransaction = async (req, res) => {
 
     if (err) {
       session.abortTransaction();
-      console.log(deleteTransactionFromFertilizerErr);
       return serverErrorMessage(res);
     }
 
