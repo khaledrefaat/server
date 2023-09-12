@@ -143,15 +143,25 @@ exports.deleteItem = async (req, res) => {
 exports.deleteItemOrder = async (req, res) => {
   const { itemId, orderId } = req.params;
 
+  let session;
   try {
-    const session = await mongoose.startSession();
+    session = await mongoose.startSession();
     session.startTransaction();
+  } catch (err) {
+    console.log(err);
+    session.abortTransaction();
+    return serverErrorMessage(res);
+  }
+
+  try {
+    console.log(req.params);
 
     const item = await Item.findById(itemId);
     const tmpOrders = item.orders;
     const orderIndex = tmpOrders.findIndex(order => order._id === orderId);
 
     for (let i = orderIndex + 1; i < tmpOrders.length; i++) {
+      console.log(orderIndex);
       if (tmpOrders[i].name === tmpOrders[orderIndex].name) {
         tmpOrders[i].total -= tmpOrders[orderIndex].trays;
       }
@@ -166,6 +176,8 @@ exports.deleteItemOrder = async (req, res) => {
     res.status(202).json({});
   } catch (err) {
     console.log(err);
+    session.abortTransaction();
+
     serverErrorMessage(res);
   }
 };

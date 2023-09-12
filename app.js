@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 
-const { mongoDevUri, mongoProdUri } = require('./config/keys');
+const { mongoDevUri } = require('./config/keys');
 
 const MONGODB_URI = mongoDevUri;
 
@@ -53,7 +53,7 @@ app.use('/tray', traysRouter);
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
-    app.listen(5001);
+    app.listen(7575);
     console.log('Working');
   })
   .catch(err => console.log(err));

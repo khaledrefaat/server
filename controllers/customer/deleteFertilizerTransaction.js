@@ -95,7 +95,7 @@ exports.deleteFertilizerTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
-    res.status(201).json({});
+    res.status(201).json({ customer });
   } catch (err) {
     session.abortTransaction();
     console.log(err);

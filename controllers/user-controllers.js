@@ -5,9 +5,12 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res, next) => {
   const { password } = req.body;
 
+  console.log(req.body);
+
   let existingUser;
   try {
     existingUser = await User.findOne({ password });
+    console.log(existingUser);
   } catch (err) {
     console.log(err);
     return res

@@ -17,7 +17,7 @@ const customerSchema = new Schema({
     {
       _id: { type: String, required: true },
       balance: { type: Number, required: true },
-      total: { type: Number, required: true },
+      total: Number,
       trays: Number,
       units: Number,
       paid: Number,
