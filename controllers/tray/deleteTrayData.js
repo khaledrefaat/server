@@ -23,10 +23,15 @@ const deleteTraysData = async (req, res) => {
   // do this
   const id = req.params.id;
 
+  let session;
   try {
-    const session = await mongoose.startSession();
+    session = await mongoose.startSession();
     session.startTransaction();
+  } catch (err) {
+    console.log(err);
+  }
 
+  try {
     const tray = await retrieveTrayById(id);
     const customer = await retrieveCustomerById(tray.customerId);
     const dailySale = await retrieveDailySaleById(tray.dailySaleId);
@@ -47,6 +52,7 @@ const deleteTraysData = async (req, res) => {
     await session.commitTransaction();
     res.status(202).json({});
   } catch (err) {
+    await session.abortTransaction();
     return serverErrorMessage(res);
   }
 };

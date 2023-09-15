@@ -113,6 +113,9 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
 
 exports.deleteMoneyTransaction = async (req, res) => {
   const { customerId, transactionId } = req.params;
+  console.log(
+    '//////////////////////////////////////////////////////////////////////////////////////////////////\ndeleteMoneyTransaction\n'
+  );
 
   let session;
   try {

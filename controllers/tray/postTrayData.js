@@ -5,7 +5,7 @@ const DailySales = require('../../models/dailySales');
 const { sendResponse, serverErrorMessage } = require('../../lib/lib');
 
 const checkForErrors = (trays, income) => {
-  if (!trays || trays[trays.length - 1].left < income)
+  if (!trays || trays.length === 0 || trays[trays.length - 1].left < income)
     return 'لا يمكن تنفيذ هذه العملية، هذا العميل ليس لديه هذا القدر من الصواني';
 
   return null;
@@ -34,6 +34,7 @@ const postTraysData = async (req, res) => {
     const customer = await retrieveCustomerById(customerId);
 
     const trays = await Tray.find({ name: customer.name });
+    console.log(trays);
 
     const isError = checkForErrors(trays, income);
     if (isError) return sendResponse(res, isError);
