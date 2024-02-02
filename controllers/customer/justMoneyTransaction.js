@@ -47,20 +47,35 @@ exports.newMoneyTransaction = async (req, res) => {
 
     const dailySaleBalance = dailySalesBalance(dailySales, paid);
 
-    const dailySale = new DailySales({
-      name: customer.name,
-      money: {
-        balance: dailySaleBalance,
-        income: paid,
-      },
-      statement: statement,
-      date,
-      noteBook: {
-        name: 'Customer',
-        _id: customer._id,
-        transactionId,
-      },
-    });
+    let dailySale;
+
+    if (paid > 0) {
+      dailySale = new DailySales({
+        name: customer.name,
+        money: {
+          balance: dailySaleBalance,
+          income: paid,
+        },
+        statement: statement,
+        date,
+        noteBook: {
+          name: 'Customer',
+          _id: customer._id,
+          transactionId,
+        },
+      });
+    } else {
+      dailySale = dailySale = new DailySales({
+        name: customer.name,
+        statement: statement,
+        date,
+        noteBook: {
+          name: 'Customer',
+          _id: customer._id,
+          transactionId,
+        },
+      });
+    }
 
     const balance = calcBalance(paid, 0, customer.balance);
 
@@ -113,10 +128,6 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
 
 exports.deleteMoneyTransaction = async (req, res) => {
   const { customerId, transactionId } = req.params;
-  console.log(
-    '//////////////////////////////////////////////////////////////////////////////////////////////////\ndeleteMoneyTransaction\n'
-  );
-
   let session;
   try {
     session = await mongoose.startSession();

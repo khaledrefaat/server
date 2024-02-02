@@ -34,7 +34,6 @@ const postTraysData = async (req, res) => {
     const customer = await retrieveCustomerById(customerId);
 
     const trays = await Tray.find({ name: customer.name });
-    console.log(trays);
 
     const isError = checkForErrors(trays, income);
     if (isError) return sendResponse(res, isError);

@@ -3,14 +3,14 @@ const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res, next) => {
-  const { password } = req.body;
-
-  console.log(req.body);
+  const { password, username } = req.body;
 
   let existingUser;
   try {
-    existingUser = await User.findOne({ password });
-    console.log(existingUser);
+    existingUser = await User.findOne({
+      password,
+      username: username.toLowerCase(),
+    });
   } catch (err) {
     console.log(err);
     return res

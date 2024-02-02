@@ -2,8 +2,67 @@ const Item = require('../models/item');
 const DailySales = require('../models/dailySales');
 const { serverErrorMessage, reverseArr, sendResponse } = require('../lib/lib');
 const { nanoid } = require('nanoid');
-const { default: mongoose } = require('mongoose');
-const { retrieveItemById } = require('../lib/retrieveModelData');
+const { retrieveItemById, getIndexById } = require('../lib/retrieveModelData');
+const mongoose = require('mongoose');
+const customer = require('../models/customer');
+
+const deleteItemTransaction = async (itemId, transactionId) => {
+  try {
+    const item = await retrieveItemById(itemId);
+
+    if (item === null) return serverErrorMessage(res);
+
+    const dataTmp = item.data;
+    const transactionIndex = getIndexById(dataTmp, transactionId);
+
+    const itemTransaction = dataTmp[transactionIndex];
+    const dailySaleId = itemTransaction.dailySaleId;
+
+    await DailySales.findByIdAndDelete(dailySaleId);
+
+    for (let i = transactionIndex + 1; i < dataTmp.length; i++)
+      dataTmp[i].balance -= itemTransaction.income;
+
+    item.balance -= itemTransaction.income;
+
+    dataTmp.splice(transactionIndex, 1);
+    item.data = dataTmp;
+    await item.save();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const deleteOrderFromItem = async (itemId, orderId, confirmOrder = false) => {
+  try {
+    const item = await Item.findById(itemId);
+    const tmpOrders = item.orders;
+    const orderIndex = tmpOrders.findIndex(order => order._id === orderId);
+
+    if (confirmOrder) {
+      const dailySaleId = tmpOrders[orderIndex].dailySaleId;
+
+      const dailySale = await DailySales.findById(dailySaleId);
+
+      dailySale.isConfirmed = true;
+      await dailySale.save();
+    }
+
+    for (let i = orderIndex + 1; i < tmpOrders.length; i++) {
+      if (tmpOrders[i].name === tmpOrders[orderIndex].name) {
+        tmpOrders[i].total -= tmpOrders[orderIndex].trays;
+      }
+    }
+
+    tmpOrders.splice(orderIndex, 1);
+    item.orders = tmpOrders;
+
+    await item.save();
+  } catch (err) {
+    console.log(err);
+    throw new Error('Error in deleteOrderFromItem');
+  }
+};
 
 exports.getItems = async (req, res) => {
   try {
@@ -30,12 +89,102 @@ exports.editItemPrice = async (req, res) => {
 
     const item = await retrieveItemById(_id);
     if (item === null) return serverErrorMessage(res);
-    item.unitPrice = newPrice;
+    item.unitPrice = parsePrice;
     item.save();
 
     sendResponse(res, item, 201);
   } catch (err) {
     console.log(err);
+    return serverErrorMessage(res);
+  }
+};
+
+exports.addToItem = async (req, res) => {
+  const { _id } = req.params;
+  const { amount, statement, date } = req.body;
+
+  let session;
+  try {
+    session = await mongoose.startSession();
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+
+  try {
+    session.startTransaction();
+
+    if (!amount) return sendResponse(res, 'لو سمحت ادخل الكمية');
+
+    const parseAmount = parseFloat(amount);
+    if (isNaN(parseAmount)) return sendResponse(res, 'الكمية يجب ان تكون رقم');
+
+    const item = await retrieveItemById(_id);
+    console.log(_id);
+    if (item === null) return serverErrorMessage(res);
+
+    const newItemBalance = item.balance + parseAmount;
+    const currStatement = statement || 'باقي كمية قديمة';
+    const transactionId = nanoid();
+
+    const newTransaction = {
+      balance: newItemBalance,
+      income: parseAmount,
+      statement: currStatement,
+      date: date || new Date(),
+      _id: transactionId,
+    };
+
+    const newDailySale = new DailySales({
+      name: item.name,
+      statement: currStatement,
+      noteBook: {
+        name: 'Item',
+        _id: item._id,
+        transactionId,
+        subName: 'Data',
+      },
+      goods: {
+        income: parseAmount,
+      },
+      date: date || new Date(),
+    });
+
+    newTransaction.dailySaleId = newDailySale._id;
+
+    item.balance = newItemBalance;
+    item.data = [...item.data, newTransaction];
+    item.save();
+
+    newDailySale.save();
+    await session.commitTransaction();
+    sendResponse(res, item, 201);
+  } catch (err) {
+    console.log(err);
+    session.abortTransaction();
+    return serverErrorMessage(res);
+  }
+};
+
+exports.deleteItemTransaction = async (req, res) => {
+  const { itemId, transactionId } = req.params;
+
+  let session;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+
+  try {
+    await deleteItemTransaction(itemId, transactionId);
+    await session.commitTransaction();
+    sendResponse(res, {}, 202);
+  } catch (err) {
+    console.log(err);
+    session.abortTransaction();
     return serverErrorMessage(res);
   }
 };
@@ -102,7 +251,7 @@ exports.createItemOrder = async (req, res) => {
         transactionId,
         subName: 'Order',
       },
-      date: date,
+      date: date || new Date(),
       notes,
     });
 
@@ -140,6 +289,30 @@ exports.deleteItem = async (req, res) => {
   }
 };
 
+exports.confirmItemOrder = async (req, res) => {
+  const { itemId, orderId } = req.params;
+
+  let session;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    await deleteOrderFromItem(itemId, orderId, true);
+    session.commitTransaction();
+    res.status(202).json({});
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+
+  try {
+  } catch (err) {
+    console.log(err);
+    session.abortTransaction();
+    return serverErrorMessage(res);
+  }
+};
+
 exports.deleteItemOrder = async (req, res) => {
   const { itemId, orderId } = req.params;
 
@@ -149,23 +322,20 @@ exports.deleteItemOrder = async (req, res) => {
     session.startTransaction();
   } catch (err) {
     console.log(err);
-    session.abortTransaction();
     return serverErrorMessage(res);
   }
 
   try {
-    console.log(req.params);
-
     const item = await Item.findById(itemId);
     const tmpOrders = item.orders;
     const orderIndex = tmpOrders.findIndex(order => order._id === orderId);
 
     for (let i = orderIndex + 1; i < tmpOrders.length; i++) {
-      console.log(orderIndex);
       if (tmpOrders[i].name === tmpOrders[orderIndex].name) {
         tmpOrders[i].total -= tmpOrders[orderIndex].trays;
       }
     }
+    await DailySales.findByIdAndDelete(tmpOrders[orderIndex].dailySaleId);
 
     tmpOrders.splice(orderIndex, 1);
     item.orders = tmpOrders;

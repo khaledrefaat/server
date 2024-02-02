@@ -129,3 +129,49 @@ exports.postLoan = async (req, res) => {
     return serverErrorMessage(res);
   }
 };
+
+exports.deleteLoan = async (req, res) => {
+  const { _id } = req.params;
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    const loan = await Loan.findById(_id);
+    const dailySale = await DailySales.findById(loan.dailySaleId);
+
+    if (loan.expense) {
+      await Loan.updateMany(
+        { _id: { $gt: loan._id } },
+        { $inc: { balance: -loan.expense } }
+      );
+      // subtract each daily sale balance that come after the targeted deleted one
+      await DailySales.find({}).updateMany(
+        { _id: { $gt: dailySale._id }, money: { $exists: true } },
+        {
+          $inc: { 'money.balance': dailySale.money.expense },
+        }
+      );
+    } else if (loan.income) {
+      await Loan.updateMany(
+        { _id: { $gt: loan._id } },
+        { $inc: { balance: loan.income } }
+      );
+      // subtract each daily sale balance that come after the targeted deleted one
+      await DailySales.find({}).updateMany(
+        { _id: { $gt: dailySale._id }, money: { $exists: true } },
+        {
+          $inc: { 'money.balance': -dailySale.money.income },
+        }
+      );
+    }
+
+    await loan.deleteOne();
+    await dailySale.deleteOne();
+
+    session.commitTransaction();
+    res.status(202).json({});
+  } catch (err) {
+    session.abortTransaction();
+    console.log(err);
+  }
+};

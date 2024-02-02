@@ -20,6 +20,7 @@ const dailySalesSchema = new Schema({
     subName: String,
     transactionId: String,
   },
+  isConfirmed: Boolean,
 });
 
 module.exports = model('DailySales', dailySalesSchema);

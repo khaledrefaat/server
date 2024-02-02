@@ -1,7 +1,37 @@
 // Import necessary dependencies and models
 const Fertilizer = require('../models/fertilizer'); // Import the Fertilizer model
 const { serverErrorMessage, reverseArr, sendResponse } = require('../lib/lib'); // Import utility functions
-const { retrieveFertilizerById } = require('../lib/retrieveModelData'); // Import a utility function
+const {
+  retrieveFertilizerById,
+  getIndexById,
+} = require('../lib/retrieveModelData'); // Import a utility function
+const dailySales = require('../models/dailySales');
+const { nanoid } = require('nanoid');
+const mongoose = require('mongoose');
+
+const deleteTransactionFromFertilizer = async (fertilizerId, transactionId) => {
+  try {
+    const fertilizer = await retrieveFertilizerById(fertilizerId);
+
+    const dataTmp = fertilizer.data;
+    const transactionIndex = getIndexById(dataTmp, transactionId);
+
+    const fertilizerTransaction = dataTmp[transactionIndex];
+    const dailySalesId = fertilizerTransaction.dailySaleId;
+
+    for (let i = transactionIndex + 1; i < dataTmp.length; i++)
+      dataTmp[i].balance -= parseFloat(fertilizerTransaction.income) || 0;
+
+    fertilizer.balance -= parseFloat(fertilizerTransaction.income) || 0;
+
+    dataTmp.splice(transactionIndex, 1);
+    fertilizer.data = dataTmp;
+    await dailySales.findByIdAndDelete(dailySalesId);
+    await fertilizer.save();
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 // Function to get a list of fertilizers
 exports.getFertilizers = async (req, res) => {
@@ -48,6 +78,86 @@ exports.editFertilizerPrice = async (req, res) => {
   } catch (err) {
     console.log(err);
     // Handle any errors with a server error message
+    return serverErrorMessage(res);
+  }
+};
+
+exports.addToFertilizer = async (req, res) => {
+  const { _id } = req.params;
+  const { amount, statement, date } = req.body;
+
+  try {
+    if (!amount) return sendResponse(res, 'لو سمحت ادخل الكمية');
+
+    const parseAmount = parseFloat(amount);
+    if (isNaN(parseAmount)) return sendResponse(res, 'الكمية يجب ان تكون رقم');
+
+    const fertilizer = await retrieveFertilizerById(_id);
+    if (fertilizer === null) return serverErrorMessage(res);
+
+    const newBalance = fertilizer.balance + parseAmount;
+    const currStatement = statement || 'باقي كمية قديمة';
+    const transactionId = nanoid();
+
+    const newTransaction = {
+      balance: newBalance,
+      income: parseAmount,
+      statement: currStatement,
+      date: date || new Date(),
+      _id: transactionId,
+    };
+
+    const newDailySale = new dailySales({
+      name: fertilizer.name,
+      statement: currStatement,
+      noteBook: {
+        name: 'Fertilizer',
+        _id: fertilizer._id,
+        transactionId,
+        subName: 'Data',
+      },
+      goods: {
+        income: parseAmount,
+      },
+      date: date || new Date(),
+    });
+
+    newTransaction.dailySaleId = newDailySale._id;
+
+    fertilizer.balance = newBalance;
+    fertilizer.data = [...fertilizer.data, newTransaction];
+    fertilizer.save();
+    console.log(newTransaction);
+    console.log(fertilizer.data);
+
+    newDailySale.save();
+
+    sendResponse(res, fertilizer, 201);
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+};
+
+exports.deleteFertilizerTransaction = async (req, res) => {
+  const { fertilizerId, transactionId } = req.params;
+
+  let session;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+
+  try {
+    await deleteTransactionFromFertilizer(fertilizerId, transactionId);
+    await session.commitTransaction();
+    sendResponse(res, {}, 202);
+  } catch (err) {
+    console.log(err);
+    session.abortTransaction();
     return serverErrorMessage(res);
   }
 };

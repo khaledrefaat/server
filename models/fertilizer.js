@@ -27,6 +27,7 @@ const fertilizerSchema = new Schema({
       customerId: Types.ObjectId,
       supplierId: Types.ObjectId,
       supplierTransactionId: String,
+      dailySaleId: Types.ObjectId,
     },
   ],
 });

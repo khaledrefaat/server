@@ -26,6 +26,7 @@ const itemSchema = new Schema({
       seedingId: { type: Types.ObjectId, ref: 'Seeding' },
       customerTransactionId: String,
       customerId: String,
+      dailySaleId: Types.ObjectId,
     },
   ],
   orders: [
