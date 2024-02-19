@@ -98,24 +98,42 @@ exports.addTransaction = async (req, res) => {
       return dailySales[dailySales.length - 1].money.balance - paid;
     };
 
-    const newDailySale = new DailySales({
-      name: existedSupplier.name,
-      money: {
-        expense: paid,
+    let newDailySale;
 
-        balance: calcDailySalesBalance() || 0,
-      },
-      goods: {
-        income: unit,
-      },
-      statement: statement,
-      date,
-      noteBook: {
-        name: 'Supplier',
-        _id: existedSupplier._id,
-        transactionId,
-      },
-    });
+    if (paid && paid < 0) {
+      newDailySale = new DailySales({
+        name: existedSupplier.name,
+        goods: {
+          income: unit,
+        },
+        statement: statement,
+        date,
+        noteBook: {
+          name: 'Supplier',
+          _id: existedSupplier._id,
+          transactionId,
+        },
+      });
+    } else {
+      newDailySale = new DailySales({
+        name: existedSupplier.name,
+        money: {
+          expense: paid,
+
+          balance: calcDailySalesBalance() || 0,
+        },
+        goods: {
+          income: unit,
+        },
+        statement: statement,
+        date,
+        noteBook: {
+          name: 'Supplier',
+          _id: existedSupplier._id,
+          transactionId,
+        },
+      });
+    }
 
     existedSupplier.data = [
       ...existedSupplier.data,

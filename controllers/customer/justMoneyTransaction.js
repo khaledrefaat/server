@@ -18,12 +18,15 @@ const { nanoid } = require('nanoid');
 
 exports.newMoneyTransaction = async (req, res) => {
   const data = req.body;
-  const { paid, statement } = req.body;
+  const { paid, statement, discount } = req.body;
   const id = req.params.id;
 
   const date = new Date();
 
-  if (!paid) return sendResponse(res, 'من فضلك ادخل المدفوع');
+  if (!paid && !discount)
+    return sendResponse(res, 'من فضلك ادخل المدفوع او الخصم');
+  if (paid && discount)
+    return sendResponse(res, 'من فضلك ادخل المدفوع او الخصم وليس الاثنين');
   if (!statement) return sendResponse(res, 'من فضلك ادخل البيان');
 
   let session;
@@ -47,9 +50,22 @@ exports.newMoneyTransaction = async (req, res) => {
 
     const dailySaleBalance = dailySalesBalance(dailySales, paid);
 
-    let dailySale;
+    let dailySale, balance;
 
-    if (paid > 0) {
+    if (discount && discount > 0) {
+      balance = calcBalance(-discount, 0, customer.balance);
+      dailySale = new DailySales({
+        name: customer.name,
+        statement: statement,
+        date,
+        noteBook: {
+          name: 'Customer',
+          _id: customer._id,
+          transactionId,
+        },
+      });
+    } else if (paid && paid > 0) {
+      balance = calcBalance(paid, 0, customer.balance);
       dailySale = new DailySales({
         name: customer.name,
         money: {
@@ -77,12 +93,10 @@ exports.newMoneyTransaction = async (req, res) => {
       });
     }
 
-    const balance = calcBalance(paid, 0, customer.balance);
-
     const newTransaction = {
       _id: transactionId,
       balance,
-      paid,
+      paid: paid || -discount,
       statement: data.statement,
       date,
       dailySaleId: dailySale._id,

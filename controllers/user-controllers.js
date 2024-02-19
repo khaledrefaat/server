@@ -3,13 +3,12 @@ const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res, next) => {
-  const { password, username } = req.body;
+  const { password } = req.body;
 
   let existingUser;
   try {
     existingUser = await User.findOne({
       password,
-      username: username.toLowerCase(),
     });
   } catch (err) {
     console.log(err);
@@ -68,7 +67,7 @@ exports.signUp = async (req, res, next) => {
 
   const createdUser = new User({
     password,
-    admin: admin ? true : false,
+    admin: !!admin,
   });
   try {
     await createdUser.save();

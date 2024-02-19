@@ -143,7 +143,7 @@ exports.deleteSeeding = async (req, res) => {
 
 exports.fixTotal = async (req, res) => {
   try {
-    const seeding = Seeding.find({});
+    const seeding = await Seeding.find({});
 
     let previousTotal = 0;
 

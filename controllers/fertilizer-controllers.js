@@ -127,9 +127,6 @@ exports.addToFertilizer = async (req, res) => {
     fertilizer.balance = newBalance;
     fertilizer.data = [...fertilizer.data, newTransaction];
     fertilizer.save();
-    console.log(newTransaction);
-    console.log(fertilizer.data);
-
     newDailySale.save();
 
     sendResponse(res, fertilizer, 201);

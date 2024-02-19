@@ -32,6 +32,7 @@ const fertilizerRouter = require('./routes/fertilizer-routes');
 const seedingRouter = require('./routes/seeding-routes');
 const traysRouter = require('./routes/trays-routes');
 const newNotes = require('./routes/newNotes-routes');
+const loaner = require('./routes/loan-routes');
 
 app.use('/', newNotes);
 
@@ -52,6 +53,9 @@ app.use('/fertilizer', fertilizerRouter);
 app.use('/seed', seedingRouter);
 // الصواني
 app.use('/tray', traysRouter);
+
+// السلفه
+app.use('/loan', loaner);
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })

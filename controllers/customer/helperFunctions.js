@@ -101,13 +101,14 @@ exports.deleteDailySaleAndUpdateBalances = async _id => {
     if (dailySale === null) return null;
     // subtract each daily sale balance that come after the targeted deleted one
 
-    DailySales.find({}).updateMany(
+    await DailySales.find({}).updateMany(
       {
         _id: { $gt: dailySale._id },
+        money: { $exists: true },
       },
 
       {
-        $inc: { 'money.balance': -dailySale.money.income },
+        $inc: { 'money.balance': -dailySale.money.income || 0 },
       }
     );
 
