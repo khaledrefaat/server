@@ -1,7 +1,7 @@
 const { Requirements } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
-const { serverErrorMessage } = require('../../lib/lib');
+const { serverErrorMessage, reverseArr } = require('../../lib/lib');
 const {
   updateModelBalance,
   calcDailySalesBalance,
@@ -10,7 +10,8 @@ const {
 
 exports.getRequirements = async (req, res) => {
   try {
-    const requirements = await Requirements.find({});
+    let requirements = await Requirements.find({});
+    requirements = reverseArr(requirements);
     res.status(200).json(requirements);
   } catch (err) {
     console.log(err);

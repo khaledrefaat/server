@@ -2,10 +2,12 @@ const { Hospitality } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
 const { calcDailySalesBalance, calcBalance } = require('./lib');
+const { reverseArr } = require('../../lib/lib');
 
 exports.getHospitality = async (req, res) => {
   try {
-    const hospitality = await Hospitality.find({});
+    let hospitality = await Hospitality.find({});
+    hospitality = reverseArr(hospitality);
     res.status(200).json(hospitality);
   } catch (err) {
     console.log(err);

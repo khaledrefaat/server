@@ -9,6 +9,16 @@ const {
 const Loaner = require('../models/loaner');
 const { nanoid } = require('nanoid');
 
+exports.getOldLoans = async (req, res) => {
+  try {
+    const loans = await Loan.find({});
+    res.status(200).json(reverseArr(loans));
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+};
+
 exports.getLoans = async (req, res) => {
   const { _id } = req.params;
   try {

@@ -6,11 +6,12 @@ const {
   calcDailySalesBalance,
   calcBalance,
 } = require('./lib');
-const { serverErrorMessage } = require('../../lib/lib');
+const { serverErrorMessage, reverseArr } = require('../../lib/lib');
 
 exports.getEmployment = async (req, res) => {
   try {
-    const employment = await Employment.find({});
+    let employment = await Employment.find({});
+    employment = reverseArr(employment);
     res.status(200).json(employment);
   } catch (err) {
     console.log(err);

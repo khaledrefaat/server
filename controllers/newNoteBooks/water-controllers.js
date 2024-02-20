@@ -1,7 +1,7 @@
 const { Water } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
-const { serverErrorMessage } = require('../../lib/lib');
+const { serverErrorMessage, reverseArr } = require('../../lib/lib');
 const {
   updateModelBalance,
   calcDailySalesBalance,
@@ -12,7 +12,8 @@ const { getIndexById } = require('../../lib/retrieveModelData');
 
 exports.getWater = async (req, res) => {
   try {
-    const water = await Water.find({});
+    let water = await Water.find({});
+    water = reverseArr(water);
     res.status(200).json(water);
   } catch (err) {
     console.log(err);
