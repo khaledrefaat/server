@@ -64,11 +64,15 @@ exports.postLoan = async (req, res) => {
   const _id = req.params.id;
   const statement = req.body.statement;
 
-  if ((income && !expense) || (!income && expense))
+  if (isNaN(income) && isNaN(expense))
+    return sendResponse(res, 'من فضلك ادخل الوارد او الصادر');
+
+  if (!isNaN(income) && !isNaN(expense))
     return sendResponse(
       res,
       'من فضلك ادخل الوارد او الصادر لا تدخل الاثنين معا'
     );
+
   if (!req.body.statement) return sendResponse(res, 'من فضلك ادخل البيان');
 
   // This code creates a new Date object to represent the current date.

@@ -16,7 +16,7 @@ const {
 const { mongoose } = require('mongoose');
 const { nanoid } = require('nanoid');
 
-exports.newMoneyTransaction = async (req, res) => {
+newMoneyTransaction = async (req, res) => {
   const data = req.body;
   const { paid, statement, discount } = req.body;
   const id = req.params.id;
@@ -53,7 +53,7 @@ exports.newMoneyTransaction = async (req, res) => {
     let dailySale, balance;
 
     if (discount && discount > 0) {
-      balance = calcBalance(-discount, 0, customer.balance);
+      balance = calcBalance(discount, 0, customer.balance);
       dailySale = new DailySales({
         name: customer.name,
         statement: statement,
@@ -81,6 +81,7 @@ exports.newMoneyTransaction = async (req, res) => {
         },
       });
     } else {
+      balance = calcBalance(paid, 0, customer.balance);
       dailySale = dailySale = new DailySales({
         name: customer.name,
         statement: statement,
@@ -92,6 +93,8 @@ exports.newMoneyTransaction = async (req, res) => {
         },
       });
     }
+
+    console.log(balance);
 
     const newTransaction = {
       _id: transactionId,
@@ -140,7 +143,7 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
   }
 };
 
-exports.deleteMoneyTransaction = async (req, res) => {
+deleteMoneyTransaction = async (req, res) => {
   const { customerId, transactionId } = req.params;
   let session;
   try {
@@ -177,4 +180,10 @@ exports.deleteMoneyTransaction = async (req, res) => {
     console.log(err);
     return serverErrorMessage(res);
   }
+};
+
+module.exports = {
+  newMoneyTransaction,
+  deleteMoneyTransaction,
+  deleteTransactionFromCustomer,
 };

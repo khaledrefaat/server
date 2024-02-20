@@ -3,6 +3,7 @@ const { retrieveCustomerById } = require('../../lib/retrieveModelData');
 const Tray = require('../../models/trays');
 const DailySales = require('../../models/dailySales');
 const { sendResponse, serverErrorMessage } = require('../../lib/lib');
+const { nanoid } = require('nanoid');
 
 const checkForErrors = (trays, income) => {
   if (!trays || trays.length === 0 || trays[trays.length - 1].left < income)
@@ -23,7 +24,11 @@ const savePostToDb = async (customer, dailySale, tray) => {
 };
 
 const postTraysData = async (req, res) => {
-  const { customerId, income, notes } = req.body;
+  const { customerId, income, notes, insurance } = req.body;
+
+  const parseIncome = Number(income);
+
+  console.log(req.body);
 
   const date = new Date();
 
@@ -35,23 +40,23 @@ const postTraysData = async (req, res) => {
 
     const trays = await Tray.find({ name: customer.name });
 
-    const isError = checkForErrors(trays, income);
+    const isError = checkForErrors(trays, parseIncome);
     if (isError) return sendResponse(res, isError);
 
-    customer.trays -= income;
+    customer.trays += parseIncome;
 
     const tray = new Tray({
       name: customer.name,
-      income,
+      income: parseIncome,
       date: date,
       notes,
       customerId,
-      left: trays[trays.length - 1].left - income,
+      left: trays[trays.length - 1].left - parseIncome,
     });
 
     const dailySale = new DailySales({
       name: customer.name,
-      statement: `اعاد ${customer.name} عدد ${income} من الصواني`,
+      statement: `اعاد ${customer.name} عدد ${parseIncome} من الصواني`,
       date,
       notes,
       noteBook: {
@@ -59,6 +64,38 @@ const postTraysData = async (req, res) => {
         _id: tray._id,
       },
     });
+
+    if (insurance) {
+      const transactionId = nanoid();
+      const parseInsurance = parseFloat(insurance);
+      const newCustomerTransaction = {
+        _id: transactionId,
+        balance: customer.balance + parseInsurance,
+        paid: -parseInsurance,
+        statement: `منصرف تأمين ${parseIncome} من صواني`,
+        date,
+        dailySaleId: dailySale._id,
+        trayId: tray._id,
+      };
+
+      const dailySales = await DailySales.find({});
+      dailySale.statement = ` اعاد ${customer.name} ${parseIncome} صواني و تم اعادة التأمين`;
+
+      if (dailySales.length === 0) dailySale.money.balance = -parseInsurance;
+      else {
+        for (let i = dailySales.length - 1; i >= 0; i--) {
+          if (dailySales[i].money.balance) {
+            dailySale.money.balance =
+              dailySales[i].money.balance - parseInsurance;
+            break;
+          }
+        }
+      }
+      dailySale.money.expense = parseInsurance;
+      customer.balance = newCustomerTransaction.balance;
+      customer.data.push(newCustomerTransaction);
+      tray.transactionId = transactionId;
+    }
 
     tray.dailySaleId = dailySale._id;
 
@@ -69,6 +106,7 @@ const postTraysData = async (req, res) => {
     await session.commitTransaction();
     res.status(201).json({});
   } catch (err) {
+    console.log(err);
     serverErrorMessage(res);
   }
 };
