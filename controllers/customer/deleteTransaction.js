@@ -23,7 +23,7 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
 
     customer.balance +=
       (customerTransaction.total || 0) - (customerTransaction.paid || 0);
-    customer.trays += customerTransaction.trays;
+    customer.trays -= customerTransaction.trays;
     tmpData.splice(transactionIndex, 1);
     customer.data = tmpData;
     await customer.save();

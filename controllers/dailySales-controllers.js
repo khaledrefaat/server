@@ -1,4 +1,4 @@
-const { removeDuplicates, sendResponse, reverseArr } = require('../lib/lib');
+const { removeDuplicates, sendResponse, sortArr } = require('../lib/lib');
 const { retrieveDailySales } = require('../lib/retrieveModelData');
 
 exports.getDailySales = async (req, res, next) => {
@@ -48,7 +48,7 @@ exports.getDailySales = async (req, res, next) => {
         }
       });
     });
-    dailySales = reverseArr(dailySales);
+    dailySales = sortArr(dailySales);
 
     sendResponse(res, { organizedDailySales, dailySales }, 200);
   } catch (err) {

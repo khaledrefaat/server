@@ -6,10 +6,9 @@ const {
 } = require('../../lib/retrieveModelData');
 const Tray = require('../../models/trays');
 
-const { serverErrorMessage, reverseArr } = require('../../lib/lib');
+const { serverErrorMessage } = require('../../lib/lib');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
-const {} = require('../customer/justMoneyTransaction');
 
 const saveDeleteToDb = async (dailySale, tray, customer) => {
   try {
@@ -34,6 +33,10 @@ const deleteTraysData = async (req, res) => {
     console.log(err);
   }
 
+  console.log(
+    '--------------------------------------------------------------------------------------'
+  );
+
   try {
     const tray = await retrieveTrayById(id);
     const customer = await retrieveCustomerById(tray.customerId);
@@ -56,19 +59,19 @@ const deleteTraysData = async (req, res) => {
         const total = parseFloat(customerTransaction.total);
         const paid = parseFloat(customerTransaction.paid);
 
-        tmpData[i].balance -= (total || 0) - paid;
+        tmpData[i].balance += (total || 0) + paid;
       }
 
-      customer.balance -=
-        (customerTransaction.total || 0) - customerTransaction.paid;
+      customer.balance += Math.abs(customerTransaction.paid);
       tmpData.splice(transactionIndex, 1);
       customer.data = tmpData;
+      customer.trays += tray.income;
+    } else {
+      customer.trays -= tray.income;
     }
 
     if (tray === null || customer === null || dailySale === null)
       return serverErrorMessage(res);
-
-    customer.trays -= tray.income;
 
     await Tray.find({ name: customer.name }).updateMany(
       { _id: { $gt: tray._id } },
@@ -77,11 +80,8 @@ const deleteTraysData = async (req, res) => {
 
     const result = saveDeleteToDb(dailySale, tray, customer);
     if (result === null) return serverErrorMessage(res);
-
-    reverseArr(customer.data);
-
     await session.commitTransaction();
-    res.status(202).json({ customer });
+    res.status(202).json({});
   } catch (err) {
     await session.abortTransaction();
     return serverErrorMessage(res);

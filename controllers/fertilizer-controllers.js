@@ -1,6 +1,6 @@
 // Import necessary dependencies and models
 const Fertilizer = require('../models/fertilizer'); // Import the Fertilizer model
-const { serverErrorMessage, reverseArr, sendResponse } = require('../lib/lib'); // Import utility functions
+const { serverErrorMessage, sortArr, sendResponse } = require('../lib/lib'); // Import utility functions
 const {
   retrieveFertilizerById,
   getIndexById,
@@ -40,7 +40,7 @@ exports.getFertilizers = async (req, res) => {
     const fertilizers = await Fertilizer.find({});
     // Reverse the order of data for each fertilizer
     fertilizers.forEach(fertilizer => {
-      fertilizer.data = reverseArr(fertilizer.data);
+      fertilizer.data = sortArr(fertilizer.data);
     });
 
     // Respond with the fetched fertilizers

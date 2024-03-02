@@ -43,8 +43,6 @@ const postTraysData = async (req, res) => {
     const isError = checkForErrors(trays, parseIncome);
     if (isError) return sendResponse(res, isError);
 
-    customer.trays += parseIncome;
-
     const tray = new Tray({
       name: customer.name,
       income: parseIncome,
@@ -70,7 +68,7 @@ const postTraysData = async (req, res) => {
       const parseInsurance = parseFloat(insurance);
       const newCustomerTransaction = {
         _id: transactionId,
-        balance: customer.balance + parseInsurance,
+        balance: customer.balance - parseInsurance,
         paid: -parseInsurance,
         statement: `منصرف تأمين ${parseIncome} من صواني`,
         date,
@@ -94,7 +92,10 @@ const postTraysData = async (req, res) => {
       dailySale.money.expense = parseInsurance;
       customer.balance = newCustomerTransaction.balance;
       customer.data.push(newCustomerTransaction);
+      customer.trays -= parseIncome;
       tray.transactionId = transactionId;
+    } else {
+      customer.trays += parseIncome;
     }
 
     tray.dailySaleId = dailySale._id;

@@ -1,7 +1,7 @@
 const { nanoid } = require('nanoid');
 const Supplier = require('../models/supplier');
 const DailySales = require('../models/dailySales');
-const { serverErrorMessage, sendResponse, reverseArr } = require('../lib/lib');
+const { serverErrorMessage, sendResponse, sortArr } = require('../lib/lib');
 const mongoose = require('mongoose');
 const {
   retrieveFertilizerById,
@@ -12,7 +12,7 @@ exports.getSuppliers = async (req, res) => {
   try {
     const suppliers = await Supplier.find({});
 
-    suppliers.forEach(supplier => (supplier.data = reverseArr(supplier.data)));
+    suppliers.forEach(supplier => (supplier.data = sortArr(supplier.data)));
 
     res.status(200).json(suppliers);
   } catch (err) {

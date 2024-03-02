@@ -2,12 +2,12 @@ const { Gas } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
 const { calcDailySalesBalance, calcBalance } = require('./lib');
-const { reverseArr } = require('../../lib/lib');
+const { sortArr } = require('../../lib/lib');
 
 exports.getGas = async (req, res) => {
   try {
     let gas = await Gas.find({});
-    gas = reverseArr(gas);
+    gas = sortArr(gas);
     res.status(200).json(gas);
   } catch (err) {
     console.log(err);

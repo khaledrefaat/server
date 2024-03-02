@@ -1,10 +1,14 @@
 const Item = require('../models/item');
 const DailySales = require('../models/dailySales');
-const { serverErrorMessage, reverseArr, sendResponse } = require('../lib/lib');
+const {
+  serverErrorMessage,
+  sortArr,
+  reverseArr,
+  sendResponse,
+} = require('../lib/lib');
 const { nanoid } = require('nanoid');
 const { retrieveItemById, getIndexById } = require('../lib/retrieveModelData');
 const mongoose = require('mongoose');
-const customer = require('../models/customer');
 
 const deleteItemTransaction = async (itemId, transactionId) => {
   try {
@@ -68,7 +72,7 @@ exports.getItems = async (req, res) => {
   try {
     const items = await Item.find({});
     items.forEach(item => {
-      item.data = reverseArr(item.data);
+      item.data = sortArr(item.data);
       item.orders = reverseArr(item.orders);
     });
 

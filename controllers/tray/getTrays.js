@@ -1,4 +1,4 @@
-const { serverErrorMessage, reverseArr } = require('../../lib/lib');
+const { serverErrorMessage, sortArr } = require('../../lib/lib');
 const { retrieveTrays } = require('../../lib/retrieveModelData');
 
 exports.getTraysData = async (req, res) => {
@@ -13,7 +13,7 @@ exports.getTraysData = async (req, res) => {
     }
 
     if (traysData === null) return serverErrorMessage(res);
-    const reverseTrays = reverseArr(traysData);
+    const reverseTrays = sortArr(traysData);
     res.status(200).json({ trays: reverseTrays, count: traysCount });
   } catch (err) {
     return serverErrorMessage(res);

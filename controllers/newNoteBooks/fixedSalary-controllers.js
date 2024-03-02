@@ -6,12 +6,12 @@ const {
   calcBalance,
   updateModelBalance,
 } = require('./lib');
-const { reverseArr } = require('../../lib/lib');
+const { sortArr } = require('../../lib/lib');
 
 exports.getFixedSalary = async (req, res) => {
   try {
     let fixedSalary = await FixedSalary.find({});
-    fixedSalary = reverseArr(fixedSalary);
+    fixedSalary = sortArr(fixedSalary);
     res.status(200).json(fixedSalary);
   } catch (err) {
     console.log(err);

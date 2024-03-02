@@ -1,7 +1,7 @@
 const { Loan } = require('../models/newNotes');
 const DailySales = require('../models/dailySales');
 const mongoose = require('mongoose');
-const { serverErrorMessage, sendResponse, reverseArr } = require('../lib/lib');
+const { serverErrorMessage, sendResponse, sortArr } = require('../lib/lib');
 const {
   calcDailySalesBalance,
   calcDailySalesBalanceIncome,
@@ -12,7 +12,7 @@ const { nanoid } = require('nanoid');
 exports.getOldLoans = async (req, res) => {
   try {
     const loans = await Loan.find({});
-    res.status(200).json(reverseArr(loans));
+    res.status(200).json(sortArr(loans));
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
@@ -23,7 +23,7 @@ exports.getLoans = async (req, res) => {
   const { _id } = req.params;
   try {
     const loan = await Loaner.findById(_id);
-    res.status(200).json(reverseArr(loan));
+    res.status(200).json(sortArr(loan));
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
@@ -33,7 +33,7 @@ exports.getLoans = async (req, res) => {
 exports.getLoaners = async (req, res) => {
   try {
     const loaners = await Loaner.find({});
-    loaners.forEach(customer => (customer.data = reverseArr(customer.data)));
+    loaners.forEach(customer => (customer.data = sortArr(customer.data)));
 
     return sendResponse(res, loaners, 200);
   } catch (err) {

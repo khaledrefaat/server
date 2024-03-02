@@ -5,8 +5,17 @@ const { retrieveDailySaleById } = require('../../lib/retrieveModelData');
 exports.calcTotal = (unitPrice, trays) =>
   parseFloat(unitPrice) * parseFloat(trays);
 
-exports.calcBalance = (paid, total, customerBalance) =>
-  parseFloat(paid) - parseFloat(total) + parseFloat(customerBalance);
+exports.calcBalance = (paid, total, customerBalance) => {
+  let [parsePaid, parseTotal, parseCustomerBalance] = [
+    parseFloat(paid),
+    parseFloat(total),
+    parseFloat(customerBalance),
+  ];
+  console.log(parsePaid, parseTotal, parseCustomerBalance);
+  if (total == 0 && parseCustomerBalance < 0)
+    return parsePaid + parseCustomerBalance;
+  return parseTotal + parseCustomerBalance - parsePaid;
+};
 
 exports.generateDailySaleStatementFertilizer = (fertilizer, data) =>
   fertilizer

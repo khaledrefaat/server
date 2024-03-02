@@ -94,8 +94,6 @@ newMoneyTransaction = async (req, res) => {
       });
     }
 
-    console.log(balance);
-
     const newTransaction = {
       _id: transactionId,
       balance,
@@ -134,7 +132,7 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
     }
 
     customer.balance +=
-      (customerTransaction.total || 0) - customerTransaction.paid;
+      (customerTransaction.total || 0) - Math.abs(customerTransaction.paid);
     tmpData.splice(transactionIndex, 1);
     customer.data = tmpData;
     await customer.save();
