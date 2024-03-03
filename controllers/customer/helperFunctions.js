@@ -14,7 +14,7 @@ exports.calcBalance = (paid, total, customerBalance) => {
   console.log(parsePaid, parseTotal, parseCustomerBalance);
   if (total == 0 && parseCustomerBalance < 0)
     return parsePaid + parseCustomerBalance;
-  return parseTotal + parseCustomerBalance - parsePaid;
+  return parsePaid - parseTotal + parseCustomerBalance;
 };
 
 exports.generateDailySaleStatementFertilizer = (fertilizer, data) =>

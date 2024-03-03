@@ -113,7 +113,7 @@ exports.newTransaction = async (req, res) => {
       trays,
       paid,
       unitPrice: item ? item.unitPrice : 0,
-      statement: statement,
+      statement: statement || item.name,
       date,
       dailySaleId: newDailySales._id,
       trayId: tray._id,

@@ -28,8 +28,6 @@ const postTraysData = async (req, res) => {
 
   const parseIncome = Number(income);
 
-  console.log(req.body);
-
   const date = new Date();
 
   try {

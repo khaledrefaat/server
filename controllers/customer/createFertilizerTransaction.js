@@ -78,7 +78,7 @@ exports.newFertilizerTransaction = async (req, res) => {
       balance: fertilizerBalance,
       expense: data.units,
       date,
-      statement: data.statement,
+      statement: data.statement || customer.name,
       customerTransactionId: transactionId,
       customerId: customer._id,
     };
@@ -90,7 +90,7 @@ exports.newFertilizerTransaction = async (req, res) => {
       units: data.units,
       paid: data.paid,
       unitPrice: fertilizer.unitPrice || 0,
-      statement: data.statement || customer.name,
+      statement: data.statement || fertilizer.name,
       date,
       dailySaleId: dailySale._id,
       fertilizerId: fertilizer._id,
