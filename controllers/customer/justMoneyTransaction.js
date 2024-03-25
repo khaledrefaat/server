@@ -52,56 +52,32 @@ newMoneyTransaction = async (req, res) => {
 
     let dailySale, balance;
 
-    if (discount && discount > 0) {
-      balance = calcBalance(discount, 0, customer.balance);
-      dailySale = new DailySales({
-        name: customer.name,
-        statement: statement,
-        date,
-        noteBook: {
-          name: 'Customer',
-          _id: customer._id,
-          transactionId,
-        },
-      });
-    } else if (paid && paid > 0) {
-      balance = calcBalance(paid, 0, customer.balance);
-      dailySale = new DailySales({
-        name: customer.name,
-        money: {
-          balance: dailySaleBalance,
-          income: paid,
-        },
-        statement: statement,
-        date,
-        noteBook: {
-          name: 'Customer',
-          _id: customer._id,
-          transactionId,
-        },
-      });
-    } else {
-      balance = calcBalance(paid, 0, customer.balance);
-      dailySale = dailySale = new DailySales({
-        name: customer.name,
-        statement: statement,
-        date,
-        noteBook: {
-          name: 'Customer',
-          _id: customer._id,
-          transactionId,
-        },
-      });
-    }
+    dailySale = new DailySales({
+      name: customer.name,
+      statement: statement,
+      date,
+      noteBook: {
+        name: 'Customer',
+        _id: customer._id,
+        transactionId,
+      },
+    });
+
+    if (paid && paid > 0)
+      dailySale.money = { balance: dailySaleBalance, income: paid };
+
+    balance = calcBalance(paid || discount, 0, customer.balance);
 
     const newTransaction = {
       _id: transactionId,
       balance,
-      paid: paid || -discount,
       statement: data.statement,
       date,
       dailySaleId: dailySale._id,
     };
+
+    if (discount) newTransaction.discount = discount;
+    else if (paid) newTransaction.paid = paid;
 
     customer.balance = newTransaction.balance;
     customer.data.push(newTransaction);
@@ -127,12 +103,15 @@ const deleteTransactionFromCustomer = async (customer, transactionIndex) => {
     for (let i = transactionIndex + 1; i < tmpData.length; i++) {
       const total = parseFloat(customerTransaction.total);
       const paid = parseFloat(customerTransaction.paid);
+      const discount = parseFloat(customerTransaction.discount);
 
-      tmpData[i].balance += (total || 0) - paid;
+      tmpData[i].balance += (total || 0) - (paid || discount);
     }
 
     customer.balance +=
-      (customerTransaction.total || 0) - Math.abs(customerTransaction.paid);
+      (customerTransaction.total || 0) -
+      (Math.abs(customerTransaction.paid) ||
+        Math.abs(customerTransaction.discount));
     tmpData.splice(transactionIndex, 1);
     customer.data = tmpData;
     await customer.save();

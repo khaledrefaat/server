@@ -11,7 +11,7 @@ exports.calcBalance = (paid, total, customerBalance) => {
     parseFloat(total),
     parseFloat(customerBalance),
   ];
-  console.log(parsePaid, parseTotal, parseCustomerBalance);
+
   if (total == 0 && parseCustomerBalance < 0)
     return parsePaid + parseCustomerBalance;
   return parsePaid - parseTotal + parseCustomerBalance;

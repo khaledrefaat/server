@@ -10,9 +10,11 @@ const {
   deleteFertilizerTransaction,
   newMoneyTransaction,
   deleteMoneyTransaction,
+  fixCustomers,
 } = require('../controllers/customer');
 
 router.get('/', getCustomers);
+router.get('/fix', fixCustomers);
 
 router.post('/', createCustomer);
 router.post('/item/:id', newTransaction);

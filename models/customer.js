@@ -21,6 +21,7 @@ const customerSchema = new Schema({
       trays: Number,
       units: Number,
       paid: Number,
+      discount: Number,
       unitPrice: Number,
       statement: String,
       date: Date,

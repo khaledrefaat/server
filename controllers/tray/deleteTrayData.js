@@ -33,10 +33,6 @@ const deleteTraysData = async (req, res) => {
     console.log(err);
   }
 
-  console.log(
-    '--------------------------------------------------------------------------------------'
-  );
-
   try {
     const tray = await retrieveTrayById(id);
     const customer = await retrieveCustomerById(tray.customerId);
@@ -54,12 +50,13 @@ const deleteTraysData = async (req, res) => {
       const transactionIndex = getIndexById(customer.data, tray.transactionId);
 
       const tmpData = customer.data;
+
       const customerTransaction = tmpData[transactionIndex];
       for (let i = transactionIndex + 1; i < tmpData.length; i++) {
         const total = parseFloat(customerTransaction.total);
         const paid = parseFloat(customerTransaction.paid);
 
-        tmpData[i].balance += (total || 0) + paid;
+        tmpData[i].balance += (total || 0) + Math.abs(paid);
       }
 
       customer.balance += Math.abs(customerTransaction.paid);
