@@ -1,5 +1,5 @@
 const { default: mongoose } = require('mongoose');
-const { serverErrorMessage } = require('../../lib/lib');
+const { serverErrorMessage, sortArr } = require('../../lib/lib');
 const {
   getIndexById,
   retrieveFertilizerById,
@@ -95,6 +95,7 @@ exports.deleteFertilizerTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
+    sortArr(customer.data);
     res.status(201).json({ customer });
   } catch (err) {
     session.abortTransaction();

@@ -2,6 +2,7 @@ const {
   sendResponse,
   dailySalesBalance,
   serverErrorMessage,
+  sortArr,
 } = require('../../lib/lib');
 const DailySales = require('../../models/dailySales');
 const {
@@ -86,6 +87,7 @@ newMoneyTransaction = async (req, res) => {
     await dailySale.save();
 
     await session.commitTransaction();
+    sortArr(customer.data);
     return sendResponse(res, customer, 201);
   } catch (err) {
     console.log(err);
@@ -151,6 +153,7 @@ deleteMoneyTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
+    sortArr(customer.data);
     res.status(201).json({ customer });
   } catch (err) {
     session.abortTransaction();

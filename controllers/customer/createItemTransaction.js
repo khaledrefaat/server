@@ -5,6 +5,7 @@ const {
   serverErrorMessage,
   dailySalesBalance,
   sendResponse,
+  sortArr,
 } = require('../../lib/lib');
 const {
   retrieveCustomerById,
@@ -131,6 +132,7 @@ exports.newTransaction = async (req, res) => {
     await newDailySales.save();
 
     await session.commitTransaction();
+    sortArr(customer.data);
     return sendResponse(res, customer, 201);
   } catch (err) {
     console.log(err);

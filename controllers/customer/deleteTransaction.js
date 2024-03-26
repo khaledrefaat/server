@@ -1,6 +1,6 @@
 const { mongoose } = require('mongoose');
 const Tray = require('../../models/trays');
-const { serverErrorMessage } = require('../../lib/lib');
+const { serverErrorMessage, sortArr } = require('../../lib/lib');
 const {
   retrieveCustomerById,
   retrieveDailySales,
@@ -109,6 +109,7 @@ const deleteTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
+    sortArr(customer.data);
     res.status(201).json({ customer });
   } catch (err) {
     session.abortTransaction();
