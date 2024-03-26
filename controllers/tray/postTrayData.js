@@ -6,6 +6,7 @@ const { sendResponse, serverErrorMessage } = require('../../lib/lib');
 const { nanoid } = require('nanoid');
 
 const checkForErrors = (trays, income) => {
+  console.log(trays[trays.length - 1].left);
   if (!trays || trays.length === 0 || trays[trays.length - 1].left < income)
     return 'لا يمكن تنفيذ هذه العملية، هذا العميل ليس لديه هذا القدر من الصواني';
 

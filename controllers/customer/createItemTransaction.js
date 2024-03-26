@@ -122,7 +122,7 @@ exports.newTransaction = async (req, res) => {
     };
 
     customer.balance = newTransaction.balance;
-    customer.trays = trays;
+    customer.trays += Number(trays);
     customer.data.push(newTransaction);
 
     await item.save();
