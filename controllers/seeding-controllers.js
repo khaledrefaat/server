@@ -2,7 +2,7 @@ const Seeding = require('../models/seeding');
 const DailySales = require('../models/dailySales');
 const Item = require('../models/item');
 const Trays = require('../models/trays');
-const { serverErrorMessage, reverseArr } = require('../lib/lib');
+const { serverErrorMessage, reverseArr, sendResponse } = require('../lib/lib');
 const { nanoid } = require('nanoid');
 const mongoose = require('mongoose');
 
@@ -22,7 +22,7 @@ exports.postSeeding = async (req, res) => {
   const parseTrays = parseInt(trays);
 
   if (!parseTrays || parseTrays <= 0)
-    return res.status(422).json({ msg: 'من فضلك ادخل عدد الصواني المزروعة' });
+    return sendResponse(res, 'من فضلك ادخل عدد الصواني المزروعة');
 
   try {
     const session = await mongoose.startSession();
@@ -134,7 +134,12 @@ exports.deleteSeeding = async (req, res) => {
 
     await seeding.deleteOne();
     await item.save();
-    res.status(202).send({});
+
+    const newSeedings = await Seeding.find({});
+
+    sortArr(item.data);
+
+    res.status(202).send({ seeding: newSeedings, item });
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
@@ -152,7 +157,7 @@ exports.fixTotal = async (req, res) => {
       seed.total = previousTotal;
       await seed.save();
     });
-    return res.status(200).json({ msg: 'Done ^_^' });
+    return sendResponse(res, 'تم تعديل جميع البيانات بنجاح', 200);
   } catch (err) {
     console.log(err);
   }

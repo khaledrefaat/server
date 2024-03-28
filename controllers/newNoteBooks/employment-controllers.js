@@ -6,7 +6,7 @@ const {
   calcDailySalesBalance,
   calcBalance,
 } = require('./lib');
-const { serverErrorMessage, sortArr } = require('../../lib/lib');
+const { serverErrorMessage, sortArr, sendResponse } = require('../../lib/lib');
 
 exports.getEmployment = async (req, res) => {
   try {
@@ -133,7 +133,7 @@ exports.fixEmploymentBalance = async (req, res) => {
     const result = await updateModelBalance(Employment);
     if (result === null) return serverErrorMessage(res);
 
-    return res.status(200).json({ msg: 'Done ^_^' });
+    return sendResponse(res, 'Done ^_^', 200);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);

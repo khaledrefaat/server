@@ -1,12 +1,17 @@
 const { mongoose } = require('mongoose');
 const Tray = require('../../models/trays');
-const { serverErrorMessage, sortArr } = require('../../lib/lib');
+const {
+  serverErrorMessage,
+  sortArr,
+  calcTraysCount,
+} = require('../../lib/lib');
 const {
   retrieveCustomerById,
   retrieveDailySales,
   retrieveItemById,
   retrieveDailySalesById,
   getIndexById,
+  retrieveTrays,
 } = require('../../lib/retrieveModelData');
 const { deleteDailySaleAndUpdateBalances } = require('./helperFunctions');
 
@@ -51,6 +56,7 @@ const deleteItemTransaction = async (itemId, transactionId) => {
     dataTmp.splice(transactionIndex, 1);
     item.data = dataTmp;
     await item.save();
+    return item;
   } catch (err) {
     console.log(err);
   }
@@ -109,8 +115,13 @@ const deleteTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
+    const item = await retrieveItemById(transaction.itemId);
+    const trays = await retrieveTrays();
+    sortArr(trays);
+    const traysCount = calcTraysCount(trays);
+    sortArr(item.data);
     sortArr(customer.data);
-    res.status(201).json({ customer });
+    res.status(201).json({ customer, item, trays, traysCount });
   } catch (err) {
     session.abortTransaction();
     console.log(err);

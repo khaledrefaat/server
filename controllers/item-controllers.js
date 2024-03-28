@@ -196,10 +196,10 @@ exports.deleteItemTransaction = async (req, res) => {
 exports.createItem = async (req, res) => {
   const { name, unitPrice } = req.body;
 
-  if (!name) return res.status(422).json({ msg: 'برجاء ادخال اسم الصنف' });
+  if (!name) return sendResponse(res, 'برجاء ادخال الاسم');
 
   if (!unitPrice || unitPrice === 0)
-    return res.status(422).json({ msg: 'برجاء ادخال سعر الوحدة' });
+    return sendResponse(res, 'برجاء ادخال السعر');
 
   let existedItem;
   try {
@@ -210,7 +210,7 @@ exports.createItem = async (req, res) => {
   }
 
   if (existedItem)
-    return res.status(422).json({ msg: 'يوجد صنف بهذا الاسم بالفعل' });
+    return sendResponse(res, 'هذا الاسم موجود بالفعل، إستخدم اسم اخر');
 
   try {
     const newItem = new Item({
@@ -221,7 +221,7 @@ exports.createItem = async (req, res) => {
       orders: [],
     });
     await newItem.save();
-    return res.status(201).json(newItem);
+    return sendResponse(res, newItem, 201);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
@@ -275,7 +275,7 @@ exports.createItemOrder = async (req, res) => {
 
     await item.save();
     await newDailySale.save();
-    res.status(201).json(item);
+    return sendResponse(res, item, 201);
   } catch (err) {
     console.log(err);
     serverErrorMessage(res);
@@ -286,7 +286,7 @@ exports.deleteItem = async (req, res) => {
   const id = req.params.id;
   try {
     await Item.findByIdAndDelete(id);
-    return res.status(202).json({ msg: 'تم حذف الصنف بنجاح' });
+    return sendResponse(res, {}, 202);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);
@@ -303,16 +303,9 @@ exports.confirmItemOrder = async (req, res) => {
 
     await deleteOrderFromItem(itemId, orderId, true);
     session.commitTransaction();
-    res.status(202).json({});
+    return sendResponse(res, {}, 202);
   } catch (err) {
     console.log(err);
-    return serverErrorMessage(res);
-  }
-
-  try {
-  } catch (err) {
-    console.log(err);
-    session.abortTransaction();
     return serverErrorMessage(res);
   }
 };
@@ -347,7 +340,7 @@ exports.deleteItemOrder = async (req, res) => {
     await item.save();
 
     await session.commitTransaction();
-    res.status(202).json({});
+    return sendResponse(res, {}, 202);
   } catch (err) {
     console.log(err);
     session.abortTransaction();

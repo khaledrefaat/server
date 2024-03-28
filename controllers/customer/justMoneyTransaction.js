@@ -16,6 +16,7 @@ const {
 } = require('./helperFunctions');
 const { mongoose } = require('mongoose');
 const { nanoid } = require('nanoid');
+const { getDailySales } = require('../dailySales-controllers');
 
 newMoneyTransaction = async (req, res) => {
   const data = req.body;
@@ -87,8 +88,7 @@ newMoneyTransaction = async (req, res) => {
     await dailySale.save();
 
     await session.commitTransaction();
-    sortArr(customer.data);
-    return sendResponse(res, customer, 201);
+    return getDailySales(req, res);
   } catch (err) {
     console.log(err);
     session.abortTransaction();

@@ -20,6 +20,7 @@ const {
   createTray,
   createItemDailySales,
 } = require('./helperFunctions');
+const { getDailySales } = require('../dailySales-controllers');
 
 exports.newTransaction = async (req, res) => {
   const id = req.params.id;
@@ -133,6 +134,7 @@ exports.newTransaction = async (req, res) => {
 
     await session.commitTransaction();
     sortArr(customer.data);
+    return getDailySales(req, res);
     return sendResponse(res, customer, 201);
   } catch (err) {
     console.log(err);

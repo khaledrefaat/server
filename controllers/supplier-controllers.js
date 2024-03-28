@@ -41,8 +41,7 @@ exports.addSupplier = async (req, res) => {
     return serverErrorMessage(res);
   }
 
-  if (existedSupplier)
-    return res.status(422).json({ msg: 'يوجد بالفعل مورد بهذا الاسم' });
+  if (existedSupplier) return sendResponse(res, 'يوجد بالفعل مورد بهذا الاسم');
 
   try {
     const newSupplier = new Supplier({
@@ -242,8 +241,12 @@ exports.deleteTransaction = async (req, res) => {
 
     await supplier.save();
 
+    const fertilizer = await retrieveFertilizerById(transaction.fertilizerId);
+
     await session.commitTransaction();
-    return res.status(202).json({});
+    if (fertilizer && fertilizer.data.length > 0) sortArr(fertilizer.data);
+    sortArr(supplier.data);
+    return res.status(202).json({ supplier, fertilizer });
   } catch (err) {
     session.abortTransaction();
     console.log(err);

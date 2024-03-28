@@ -14,6 +14,7 @@ const {
   retrieveFertilizerById,
 } = require('../../lib/retrieveModelData');
 const { dailySalesBalance, sendResponse } = require('../../lib/lib');
+const { getDailySales } = require('../dailySales-controllers');
 
 exports.newFertilizerTransaction = async (req, res) => {
   const data = req.body;
@@ -108,7 +109,7 @@ exports.newFertilizerTransaction = async (req, res) => {
     await fertilizer.save();
 
     await session.commitTransaction();
-    return sendResponse(res, fertilizer, 201);
+    return getDailySales(req, res);
   } catch (err) {
     console.log(err);
     session.abortTransaction();

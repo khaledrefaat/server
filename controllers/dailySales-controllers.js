@@ -1,62 +1,37 @@
-const { removeDuplicates, sendResponse, sortArr } = require('../lib/lib');
-const { retrieveDailySales } = require('../lib/retrieveModelData');
+const { sendResponse, serverErrorMessage } = require('../lib/lib');
 
-exports.getDailySales = async (req, res, next) => {
-  let dailySales = await retrieveDailySales();
+const DailySales = require('../models/dailySales');
 
+exports.getDailySales = async (req, res) => {
+  const page = req.params.page;
   try {
-    const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
+    const dailySales = await DailySales.find()
+      .sort({ date: -1 })
+      .limit(50)
+      .skip((page - 1) * 50)
+      .exec();
+    const count = await DailySales.count();
+    const pages = Math.ceil(count / 50);
 
-    let years = dailySales.map(dailySale =>
-      new Date(dailySale.date).getFullYear()
-    );
-    years = removeDuplicates(years);
-
-    let organizedDailySales = {};
-    // sending data as filtered as years and months
-    years.forEach(year => {
-      dailySales.forEach(dailySale => {
-        const dailySaleDate = new Date(dailySale.date);
-
-        if (dailySaleDate.getFullYear() === year) {
-          if (!organizedDailySales[year]) organizedDailySales[year] = {};
-
-          if (organizedDailySales[year][monthNames[dailySaleDate.getMonth()]]) {
-            organizedDailySales[year][
-              monthNames[dailySaleDate.getMonth()]
-            ].push(dailySale);
-          } else {
-            organizedDailySales[year][monthNames[dailySaleDate.getMonth()]] =
-              [];
-            organizedDailySales[year][
-              monthNames[dailySaleDate.getMonth()]
-            ].push(dailySale);
-          }
-        }
-      });
-    });
-    dailySales = sortArr(dailySales);
-
-    sendResponse(res, { organizedDailySales, dailySales }, 200);
+    sendResponse(res, { dailySales, pages }, 200);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
-exports.postDailySales = async () => {};
+exports.getDailySalesSearch = async (req, res) => {
+  const term = req.params.term;
+  try {
+    const dailySales = await DailySales.find({
+      name: { $regex: `${term}.*` },
+    })
+      .sort({ date: -1 })
+      .exec();
 
-exports.deleteDailySales = async () => {};
+    return sendResponse(res, { dailySales, pages }, 200);
+  } catch (err) {
+    console.log(err);
+    return serverErrorMessage(res);
+  }
+};

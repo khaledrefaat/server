@@ -2,9 +2,9 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 
-const { mongoDevUri, mongoProdUri } = require('./config/keys');
+const { mongoDevUri } = require('./config/keys');
 
-const MONGODB_URI = mongoProdUri;
+const MONGODB_URI = mongoDevUri;
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

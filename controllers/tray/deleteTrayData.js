@@ -3,10 +3,15 @@ const {
   retrieveTrayById,
   retrieveDailySaleById,
   getIndexById,
+  retrieveTrays,
 } = require('../../lib/retrieveModelData');
 const Tray = require('../../models/trays');
 
-const { serverErrorMessage } = require('../../lib/lib');
+const {
+  serverErrorMessage,
+  sortArr,
+  calcTraysCount,
+} = require('../../lib/lib');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
 
@@ -75,10 +80,15 @@ const deleteTraysData = async (req, res) => {
       { $inc: { left: tray.income } }
     );
 
-    const result = saveDeleteToDb(dailySale, tray, customer);
+    const result = await saveDeleteToDb(dailySale, tray, customer);
     if (result === null) return serverErrorMessage(res);
+
     await session.commitTransaction();
-    res.status(202).json({});
+    const trays = await retrieveTrays();
+    const traysCount = calcTraysCount(trays);
+    sortArr(trays);
+    sortArr(customer.data);
+    res.status(202).json({ trays, customer, traysCount });
   } catch (err) {
     await session.abortTransaction();
     return serverErrorMessage(res);

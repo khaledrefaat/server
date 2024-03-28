@@ -149,9 +149,14 @@ exports.deleteFertilizerTransaction = async (req, res) => {
   }
 
   try {
-    await deleteTransactionFromFertilizer(fertilizerId, transactionId);
+    let fertilizer = await deleteTransactionFromFertilizer(
+      fertilizerId,
+      transactionId
+    );
     await session.commitTransaction();
-    sendResponse(res, {}, 202);
+    const newFertilizer = await Fertilizer.findById(fertilizerId);
+    sortArr(newFertilizer.data);
+    sendResponse(res, { fertilizer: newFertilizer }, 202);
   } catch (err) {
     console.log(err);
     session.abortTransaction();
@@ -164,11 +169,12 @@ exports.createFertilizer = async (req, res) => {
   const { name, unitPrice } = req.body;
 
   // Check if the name is provided
-  if (!name) return res.status(422).json({ msg: 'برجاء ادخال الاسم' });
+
+  if (!name) return sendResponse(res, 'برجاء ادخال الاسم');
 
   // Check if the unit price is provided and not zero
   if (!unitPrice || unitPrice === 0)
-    return res.status(422).json({ msg: 'برجاء ادخال سعر الوحدة' });
+    return sendResponse(res, 'برجاء ادخال سعر الوحدة');
 
   let existedFertilizer;
   try {
@@ -182,9 +188,7 @@ exports.createFertilizer = async (req, res) => {
 
   // Handle the case where a fertilizer with the same name already exists
   if (existedFertilizer)
-    return res
-      .status(422)
-      .json({ msg: 'يوجد  سماد او مبيد بهذا الاسم بالفعل' });
+    return sendResponse(res, 'يوجد  سماد او مبيد بهذا الاسم بالفعل');
 
   try {
     // Create a new fertilizer instance with the provided data
@@ -197,7 +201,7 @@ exports.createFertilizer = async (req, res) => {
     // Save the new fertilizer to the database
     await newFertilizer.save();
     // Respond with the created fertilizer
-    return res.status(201).json(newFertilizer);
+    return sendResponse(res, newFertilizer, 201);
   } catch (err) {
     console.log(err);
     // Handle any errors with a server error message

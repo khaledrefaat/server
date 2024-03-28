@@ -1,14 +1,12 @@
 const express = require('express');
 const {
   getDailySales,
-  postDailySales,
-  deleteDailySales,
+  getDailySalesSearch,
 } = require('../controllers/dailySales-controllers');
 
 const router = express.Router();
 
-router.get('/', getDailySales);
-router.post('/', postDailySales);
-router.delete('/', deleteDailySales);
+router.get('/:page', getDailySales);
+router.get('/search/:term', getDailySalesSearch);
 
 module.exports = router;

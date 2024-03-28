@@ -2,7 +2,7 @@ const { mongoose } = require('mongoose');
 const { retrieveCustomerById } = require('../../lib/retrieveModelData');
 const Tray = require('../../models/trays');
 const DailySales = require('../../models/dailySales');
-const { sendResponse, serverErrorMessage } = require('../../lib/lib');
+const { sendResponse, serverErrorMessage, sortArr } = require('../../lib/lib');
 const { nanoid } = require('nanoid');
 
 const checkForErrors = (trays, income) => {
@@ -103,8 +103,11 @@ const postTraysData = async (req, res) => {
 
     if (result === null) return serverErrorMessage(res);
 
+    const newDailySales = await dailySale.find({});
+    sortArr(newDailySales);
+
     await session.commitTransaction();
-    res.status(201).json({});
+    res.status(201).json({ dailySales: newDailySales });
   } catch (err) {
     console.log(err);
     serverErrorMessage(res);

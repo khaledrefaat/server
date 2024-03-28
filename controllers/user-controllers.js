@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const { serverErrorMessage, sendResponse } = require('../lib/lib');
 
 exports.login = async (req, res, next) => {
   const { password } = req.body;
@@ -12,13 +13,11 @@ exports.login = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل الدخول، من فضلك حاول في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 
   if (existingUser.password !== password) {
-    return res.status(401).json({ msg: 'كلمة السر غير صحيحة' });
+    return sendResponse(res, 'اسم المستخدم او كلمة المرور غير صحيحة', 401);
   }
 
   let token;
@@ -32,9 +31,7 @@ exports.login = async (req, res, next) => {
     );
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل الدخول، من فضلك حاول في وقت لاحق' });
+    return serverErrorMessage(res);
   }
   res.json({
     userId: existingUser._id,
@@ -46,7 +43,7 @@ exports.login = async (req, res, next) => {
 exports.signUp = async (req, res, next) => {
   const validationErrorResult = validationResult(req);
   if (!validationErrorResult.isEmpty()) {
-    return res.status(422).json({ msg: 'Invalid Inputs!' });
+    return sendResponse(res, validationErrorResult.array()[0].msg);
   }
 
   const { password, admin } = req.body;
@@ -56,13 +53,11 @@ exports.signUp = async (req, res, next) => {
     exsistingUser = await User.findOne({ password });
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل حسابك، من فضلك حاول في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 
   if (exsistingUser) {
-    return res.status(422).json({ msg: 'اسم المستخدم موجود بالفعل' });
+    return sendResponse(res, 'اسم المستخدم موجود بالفعل');
   }
 
   const createdUser = new User({
@@ -73,9 +68,7 @@ exports.signUp = async (req, res, next) => {
     await createdUser.save();
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل حسابك، من فضلك حاول في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 
   let token;
@@ -89,9 +82,7 @@ exports.signUp = async (req, res, next) => {
     );
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .json({ msg: 'حدث خطأ اثناء تسجيل حسابك، من فضلك حاول في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 
   res.json({

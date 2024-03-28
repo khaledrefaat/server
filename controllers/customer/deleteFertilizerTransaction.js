@@ -24,6 +24,7 @@ const deleteTransactionFromFertilizer = async (fertilizerId, transactionId) => {
     dataTmp.splice(transactionIndex, 1);
     fertilizer.data = dataTmp;
     await fertilizer.save();
+    return fertilizer;
   } catch (err) {
     console.log(err);
   }
@@ -95,8 +96,10 @@ exports.deleteFertilizerTransaction = async (req, res) => {
     await deleteTransactionFromCustomer(customer, transactionIndex);
 
     await session.commitTransaction();
+    const fertilizer = await retrieveFertilizerById(transaction.fertilizerId);
+    sortArr(fertilizer.data);
     sortArr(customer.data);
-    res.status(201).json({ customer });
+    res.status(201).json({ customer, fertilizer });
   } catch (err) {
     session.abortTransaction();
     console.log(err);

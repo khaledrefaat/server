@@ -6,7 +6,7 @@ const {
   calcBalance,
   updateModelBalance,
 } = require('./lib');
-const { sortArr } = require('../../lib/lib');
+const { sortArr, serverErrorMessage, sendResponse } = require('../../lib/lib');
 
 exports.getFixedSalary = async (req, res) => {
   try {
@@ -15,7 +15,7 @@ exports.getFixedSalary = async (req, res) => {
     res.status(200).json(fixedSalary);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
@@ -64,7 +64,7 @@ exports.postFixedSalary = async (req, res) => {
     res.status(201).json({});
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
@@ -114,7 +114,7 @@ exports.fixFixedSalaryBalance = async (req, res) => {
     const result = await updateModelBalance(FixedSalary);
     if (result === null) return serverErrorMessage(res);
 
-    return res.status(200).json({ msg: 'Done ^_^' });
+    return sendResponse(res, 'Done ^_^', 200);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);

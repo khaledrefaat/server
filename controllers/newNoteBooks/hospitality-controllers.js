@@ -2,7 +2,7 @@ const { Hospitality } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
 const { calcDailySalesBalance, calcBalance } = require('./lib');
-const { sortArr } = require('../../lib/lib');
+const { sortArr, serverErrorMessage } = require('../../lib/lib');
 
 exports.getHospitality = async (req, res) => {
   try {
@@ -11,7 +11,7 @@ exports.getHospitality = async (req, res) => {
     res.status(200).json(hospitality);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
@@ -60,7 +60,7 @@ exports.postHospitality = async (req, res) => {
     res.status(201).json({});
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 

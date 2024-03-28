@@ -1,7 +1,7 @@
 const { Requirements } = require('../../models/newNotes');
 const mongoose = require('mongoose');
 const DailySales = require('../../models/dailySales');
-const { serverErrorMessage, sortArr } = require('../../lib/lib');
+const { serverErrorMessage, sortArr, sendResponse } = require('../../lib/lib');
 const {
   updateModelBalance,
   calcDailySalesBalance,
@@ -107,7 +107,7 @@ exports.fixRequirementsBalance = async (req, res) => {
     const result = await updateModelBalance(Requirements);
     if (result === null) return serverErrorMessage(res);
 
-    return res.status(200).json({ msg: 'Done ^_^' });
+    return sendResponse(res, 'Done ^_^', 200);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);

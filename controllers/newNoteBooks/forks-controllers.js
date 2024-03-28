@@ -2,7 +2,7 @@ const { Forks } = require('../../models/newNotes');
 const DailySales = require('../../models/dailySales');
 const mongoose = require('mongoose');
 const { calcDailySalesBalance, calcBalance } = require('./lib');
-const { dailySalesBalance } = require('../../lib/lib');
+const { dailySalesBalance, serverErrorMessage } = require('../../lib/lib');
 
 exports.getForks = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ exports.getForks = async (req, res) => {
     res.status(200).json(forks);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
@@ -59,7 +59,7 @@ exports.postForks = async (req, res) => {
     res.status(201).json({});
   } catch (err) {
     console.log(err);
-    res.status(500).json({ msg: 'حدث خطأ ما برجاء المحاولة في وقت لاحق' });
+    return serverErrorMessage(res);
   }
 };
 
