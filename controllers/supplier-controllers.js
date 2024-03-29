@@ -59,11 +59,14 @@ exports.addSupplier = async (req, res) => {
 };
 
 exports.addTransaction = async (req, res) => {
-  const { paid, unitPrice, unit, statement, notes } = req.body;
+  const { paid, unitPrice, unit, statement, notes, discount } = req.body;
   const id = req.params.id;
 
-  if (!paid && !unit)
-    return sendResponse(res, 'من فضلك ادخل المبلغ او ادخل عدد الوحدات');
+  if (!paid && !unit && !discount)
+    return sendResponse(
+      res,
+      'من فضلك ادخل المبلغ او ادخل عدد الوحدات او ادخل الخصم'
+    );
 
   if (!statement) return sendResponse(res, 'من فضلك ادخل البيان');
 
@@ -81,7 +84,8 @@ exports.addTransaction = async (req, res) => {
     const existedSupplier = await Supplier.findById(id);
 
     const total = (unitPrice || 0) * (unit || 0);
-    const newBalance = (paid || 0) - total + existedSupplier.balance;
+    const newBalance =
+      (paid || discount || 0) - total + existedSupplier.balance;
     const transactionId = nanoid();
     const date = new Date();
     existedSupplier.balance = newBalance;
@@ -97,41 +101,28 @@ exports.addTransaction = async (req, res) => {
       return dailySales[dailySales.length - 1].money.balance - paid;
     };
 
-    let newDailySale;
+    let newDailySale = new DailySales({
+      name: existedSupplier.name,
+      statement: statement,
+      date,
+      noteBook: {
+        name: 'Supplier',
+        _id: existedSupplier._id,
+        transactionId,
+      },
+    });
 
-    if (paid && paid < 0) {
-      newDailySale = new DailySales({
-        name: existedSupplier.name,
-        goods: {
-          income: unit,
-        },
-        statement: statement,
-        date,
-        noteBook: {
-          name: 'Supplier',
-          _id: existedSupplier._id,
-          transactionId,
-        },
-      });
-    } else {
-      newDailySale = new DailySales({
-        name: existedSupplier.name,
-        money: {
-          expense: paid,
+    if (paid && paid > 0) {
+      newDailySale.money = {
+        expense: paid,
+        balance: calcDailySalesBalance() || 0,
+      };
+    }
 
-          balance: calcDailySalesBalance() || 0,
-        },
-        goods: {
-          income: unit,
-        },
-        statement: statement,
-        date,
-        noteBook: {
-          name: 'Supplier',
-          _id: existedSupplier._id,
-          transactionId,
-        },
-      });
+    if (unit) {
+      newDailySale.goods = {
+        income: unit,
+      };
     }
 
     existedSupplier.data = [
@@ -143,6 +134,7 @@ exports.addTransaction = async (req, res) => {
         paid,
         unitPrice,
         unit,
+        discount,
         statement,
         date,
         notes,
@@ -222,7 +214,8 @@ exports.deleteTransaction = async (req, res) => {
     await dailySale.deleteOne();
 
     supplier.balance +=
-      parseInt(transaction.total) - (parseInt(transaction.paid) || 0);
+      parseInt(transaction.total) -
+      (parseInt(transaction.paid) || parseInt(transaction.discount) || 0);
     dataTmp.splice(transactionIndex, 1);
     supplier.data = dataTmp;
 

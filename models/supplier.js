@@ -12,6 +12,7 @@ const supplierSchema = new Schema({
       balance: { type: Number, required: true },
       total: Number,
       paid: Number,
+      discount: Number,
       unitPrice: Number,
       unit: Number,
       statement: String,
