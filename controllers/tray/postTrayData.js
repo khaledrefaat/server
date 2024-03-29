@@ -37,6 +37,7 @@ const postTraysData = async (req, res) => {
     const customer = await retrieveCustomerById(customerId);
 
     const trays = await Tray.find({ name: customer.name });
+    sortArr(trays);
 
     const isError = checkForErrors(trays, parseIncome);
     if (isError) return sendResponse(res, isError);
@@ -47,7 +48,7 @@ const postTraysData = async (req, res) => {
       date: date,
       notes,
       customerId,
-      left: trays[trays.length - 1].left - parseIncome,
+      left: trays[0].left - parseIncome,
     });
 
     const dailySale = new DailySales({
