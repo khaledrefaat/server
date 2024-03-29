@@ -43,6 +43,11 @@ const deleteTraysData = async (req, res) => {
     const customer = await retrieveCustomerById(tray.customerId);
     const dailySale = await retrieveDailySaleById(tray.dailySaleId);
 
+    const transactionIndex = getIndexById(customer.data, tray.transactionId);
+
+    const tmpData = customer.data;
+    const customerTransaction = tmpData[transactionIndex];
+
     let insurance;
     if (dailySale.money.expense) {
       insurance = dailySale.money.expense;
@@ -52,11 +57,7 @@ const deleteTraysData = async (req, res) => {
           $inc: { 'money.balance': dailySale.money.expense || 0 },
         }
       );
-      const transactionIndex = getIndexById(customer.data, tray.transactionId);
 
-      const tmpData = customer.data;
-
-      const customerTransaction = tmpData[transactionIndex];
       for (let i = transactionIndex + 1; i < tmpData.length; i++) {
         const total = parseFloat(customerTransaction.total);
         const paid = parseFloat(customerTransaction.paid);
@@ -70,6 +71,8 @@ const deleteTraysData = async (req, res) => {
       customer.trays += tray.income;
     } else {
       customer.trays -= tray.income;
+      tmpData.splice(transactionIndex, 1);
+      customer.data = tmpData;
     }
 
     if (tray === null || customer === null || dailySale === null)

@@ -29,7 +29,7 @@ exports.getDailySalesSearch = async (req, res) => {
       .sort({ date: -1 })
       .exec();
 
-    return sendResponse(res, { dailySales, pages }, 200);
+    return sendResponse(res, { dailySales }, 200);
   } catch (err) {
     console.log(err);
     return serverErrorMessage(res);

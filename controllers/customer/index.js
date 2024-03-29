@@ -1,5 +1,5 @@
 const { createCustomer } = require('./createCustomer');
-const { getCustomers } = require('./getCustomers');
+const { getCustomers, fixCustomer } = require('./getCustomers');
 
 const {
   deleteTransactionFromCustomer,
@@ -37,6 +37,7 @@ module.exports = {
   deleteItemTransaction,
   deleteTransactionFromCustomer,
   newTransaction,
+  fixCustomer,
   newTransaction,
   validateItemInput,
   validateFertilizerInput,
