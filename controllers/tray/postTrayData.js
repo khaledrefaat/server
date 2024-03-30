@@ -6,7 +6,7 @@ const { sendResponse, serverErrorMessage, sortArr } = require('../../lib/lib');
 const { nanoid } = require('nanoid');
 
 const checkForErrors = (trays, income) => {
-  if (!trays || trays.length === 0 || trays[trays.length - 1].left < income)
+  if (!trays || trays.length === 0 || trays[0].left < income)
     return 'لا يمكن تنفيذ هذه العملية، هذا العميل ليس لديه هذا القدر من الصواني';
 
   return null;
@@ -62,21 +62,22 @@ const postTraysData = async (req, res) => {
       },
     });
 
-    if (insurance) {
-      const transactionId = nanoid();
-      const parseInsurance = parseFloat(insurance);
-      const newCustomerTransaction = {
-        _id: transactionId,
-        balance: customer.balance - parseInsurance,
-        paid: -parseInsurance,
-        statement: `منصرف تأمين ${parseIncome} من صواني`,
-        date,
-        dailySaleId: dailySale._id,
-        trayId: tray._id,
-      };
+    const transactionId = nanoid();
+    const newCustomerTransaction = {
+      _id: transactionId,
+      date,
+      dailySaleId: dailySale._id,
+      trayId: tray._id,
+    };
 
+    if (insurance) {
+      const parseInsurance = parseFloat(insurance);
       const dailySales = await DailySales.find({});
       dailySale.statement = ` اعاد ${customer.name} ${parseIncome} صواني و تم اعادة التأمين`;
+
+      newCustomerTransaction.paid = -parseInsurance;
+      newCustomerTransaction.balance = customer.balance - parseInsurance;
+      newCustomerTransaction.statement = `اعاد ${customer.name} ${parseIncome} صواني و تم اعادة التأمين`;
 
       if (dailySales.length === 0) dailySale.money.balance = -parseInsurance;
       else {
@@ -90,14 +91,20 @@ const postTraysData = async (req, res) => {
       }
       dailySale.money.expense = parseInsurance;
       customer.balance = newCustomerTransaction.balance;
-      customer.data.push(newCustomerTransaction);
+
       customer.trays -= parseIncome;
       tray.transactionId = transactionId;
     } else {
-      customer.trays += parseIncome;
+      dailySale.statement = ` اعاد ${customer.name} ${parseIncome} صواني`;
+
+      customer.trays -= parseIncome;
+      newCustomerTransaction.statement = `اعاد ${customer.name} ${parseIncome} صواني`;
+      newCustomerTransaction.balance = customer.balance;
     }
 
     tray.dailySaleId = dailySale._id;
+
+    customer.data.push(newCustomerTransaction);
 
     const result = await savePostToDb(customer, dailySale, tray);
 

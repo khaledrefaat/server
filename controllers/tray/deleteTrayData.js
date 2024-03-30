@@ -70,7 +70,7 @@ const deleteTraysData = async (req, res) => {
       customer.data = tmpData;
       customer.trays += tray.income;
     } else {
-      customer.trays -= tray.income;
+      customer.trays += tray.income;
       tmpData.splice(transactionIndex, 1);
       customer.data = tmpData;
     }
