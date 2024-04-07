@@ -90,7 +90,7 @@ const postTraysData = async (req, res) => {
         }
       }
       dailySale.money.expense = parseInsurance;
-      customer.balance = newCustomerTransaction.balance;
+      customer.balance -= parseInsurance;
 
       customer.trays -= parseIncome;
       tray.transactionId = transactionId;
